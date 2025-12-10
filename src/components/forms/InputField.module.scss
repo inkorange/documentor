@@ -1,0 +1,201 @@
+/**
+ * CSS Variables used:
+ * --input-background-color: Default input background color
+ * --input-border-color: Default input border color
+ * --input-text-color: Default input text color
+ * --input-placeholder-color: Placeholder text color
+ * --input-focus-border-color: Border color when focused
+ * --input-focus-shadow-color: Shadow color when focused
+ * --input-disabled-background-color: Background color when disabled
+ * --input-disabled-text-color: Text color when disabled
+ * --success-border-color: Border color for success state
+ * --success-background-color: Background color for success state
+ * --error-border-color: Border color for error state
+ * --error-background-color: Background color for error state
+ * --error-text-color: Text color for error messages
+ * --warning-border-color: Border color for warning state
+ * --warning-background-color: Background color for warning state
+ * --label-text-color: Color for label text
+ * --helper-text-color: Color for helper text
+ * --required-indicator-color: Color for required asterisk
+ *
+ * Styles for the InputField component with support for multiple variants and sizes.
+ */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &.fullWidth {
+    width: 100%;
+  }
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--label-text-color, #374151);
+  margin-bottom: 0.25rem;
+}
+
+.required {
+  color: var(--required-indicator-color, #ef4444);
+  margin-left: 0.25rem;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 1rem;
+  font-family: inherit;
+  line-height: 1.5;
+  color: var(--input-text-color, #1f2937);
+  background-color: var(--input-background-color, #ffffff);
+  border: 2px solid var(--input-border-color, #d1d5db);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+
+  &::placeholder {
+    color: var(--input-placeholder-color, #9ca3af);
+  }
+
+  &:focus {
+    border-color: var(--input-focus-border-color, #3b82f6);
+    box-shadow: 0 0 0 3px var(--input-focus-shadow-color, rgba(59, 130, 246, 0.1));
+  }
+
+  &:disabled {
+    background-color: var(--input-disabled-background-color, #f3f4f6);
+    color: var(--input-disabled-text-color, #9ca3af);
+    cursor: not-allowed;
+  }
+
+  &.hasLeftIcon {
+    padding-left: 2.5rem;
+  }
+
+  &.hasRightIcon {
+    padding-right: 2.5rem;
+  }
+}
+
+.leftIcon,
+.rightIcon {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--input-placeholder-color, #9ca3af);
+  pointer-events: none;
+}
+
+.leftIcon {
+  left: 0.75rem;
+}
+
+.rightIcon {
+  right: 0.75rem;
+}
+
+/* Size variants */
+.small {
+  padding: 0.375rem 0.625rem;
+  font-size: 0.875rem;
+
+  &.hasLeftIcon {
+    padding-left: 2rem;
+  }
+
+  &.hasRightIcon {
+    padding-right: 2rem;
+  }
+}
+
+.medium {
+  padding: 0.625rem 0.875rem;
+  font-size: 1rem;
+}
+
+.large {
+  padding: 0.875rem 1.125rem;
+  font-size: 1.125rem;
+
+  &.hasLeftIcon {
+    padding-left: 3rem;
+  }
+
+  &.hasRightIcon {
+    padding-right: 3rem;
+  }
+}
+
+/* State variants */
+.default {
+  border-color: var(--input-border-color, #d1d5db);
+
+  &:hover:not(:disabled) {
+    border-color: var(--input-focus-border-color, #3b82f6);
+  }
+}
+
+.success {
+  border-color: var(--success-border-color, #10b981);
+  background-color: var(--success-background-color, #f0fdf4);
+
+  &:focus {
+    border-color: var(--success-border-color, #10b981);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  }
+}
+
+.error {
+  border-color: var(--error-border-color, #ef4444);
+  background-color: var(--error-background-color, #fef2f2);
+
+  &:focus {
+    border-color: var(--error-border-color, #ef4444);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+}
+
+.warning {
+  border-color: var(--warning-border-color, #f59e0b);
+  background-color: var(--warning-background-color, #fffbeb);
+
+  &:focus {
+    border-color: var(--warning-border-color, #f59e0b);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+  }
+}
+
+/* Helper and error messages */
+.helperText {
+  font-size: 0.875rem;
+  color: var(--helper-text-color, #6b7280);
+  margin-top: 0.25rem;
+}
+
+.errorMessage {
+  font-size: 0.875rem;
+  color: var(--error-text-color, #ef4444);
+  margin-top: 0.25rem;
+}
+
+/* Full width */
+.fullWidth {
+  width: 100%;
+}
+
+/* Disabled state */
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

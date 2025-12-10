@@ -1,0 +1,20 @@
+{
+  "name": "Documentor",
+  "description": "A React application for documentation",
+  "version": "1.0.0",
+  "settings": {
+    "autoIndex": true,
+    "includePatterns": [
+      "src/**/*",
+      "public/**/*",
+      "package.json",
+      "README.md"
+    ],
+    "excludePatterns": [
+      "node_modules/**",
+      "build/**",
+      ".git/**",
+      "*.log"
+    ]
+  }
+}

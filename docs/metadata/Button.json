@@ -1,0 +1,126 @@
+{
+  "component": {
+    "name": "Button",
+    "description": "",
+    "filePath": "src/components/forms/Button.tsx",
+    "props": {
+      "variant": {
+        "type": "ButtonVariant",
+        "values": [
+          "primary",
+          "secondary",
+          "outline"
+        ],
+        "optional": true,
+        "description": "Controls the display variant of the button component \n renderVariants: true",
+        "renderVariants": true,
+        "hideInDocs": false
+      },
+      "children": {
+        "type": "React.ReactNode",
+        "optional": false,
+        "description": "content for the button text",
+        "renderVariants": false,
+        "hideInDocs": false
+      }
+    },
+    "styleFiles": [
+      "./Button.module.scss"
+    ]
+  },
+  "variants": [
+    {
+      "props": {
+        "variant": "primary",
+        "children": "Button Text"
+      },
+      "code": "<Button variant=\"primary\">\n  Button Text\n</Button>"
+    },
+    {
+      "props": {
+        "variant": "secondary",
+        "children": "Button Text"
+      },
+      "code": "<Button variant=\"secondary\">\n  Button Text\n</Button>"
+    },
+    {
+      "props": {
+        "variant": "outline",
+        "children": "Button Text"
+      },
+      "code": "<Button variant=\"outline\">\n  Button Text\n</Button>"
+    }
+  ],
+  "cssVariables": [
+    {
+      "name": "--primary-background-color",
+      "description": "Primary button background color",
+      "default": "#0066cc"
+    },
+    {
+      "name": "--primary-background-hover-color",
+      "description": "Primary button hover background color",
+      "default": "#0052a3"
+    },
+    {
+      "name": "--primary-background-active-color",
+      "description": "Primary button active background color",
+      "default": "#003d7a"
+    },
+    {
+      "name": "--primary-text-color",
+      "description": "Primary button text color",
+      "default": "#ffffff"
+    },
+    {
+      "name": "--secondary-background-color",
+      "description": "Secondary button background color",
+      "default": "#6c757d"
+    },
+    {
+      "name": "--secondary-background-hover-color",
+      "description": "Secondary button hover background color",
+      "default": "#5a6268"
+    },
+    {
+      "name": "--secondary-background-active-color",
+      "description": "Secondary button active background color",
+      "default": "#494f54"
+    },
+    {
+      "name": "--secondary-text-color",
+      "description": "Secondary button text color",
+      "default": "#ffffff"
+    },
+    {
+      "name": "--outline-border-color",
+      "description": "Outline button border color",
+      "default": "#0066cc"
+    },
+    {
+      "name": "--outline-text-color",
+      "description": "Outline button text color",
+      "default": "#0066cc"
+    },
+    {
+      "name": "--outline-hover-background-color",
+      "description": "Outline button hover background color",
+      "default": "#0066cc"
+    },
+    {
+      "name": "--outline-hover-text-color",
+      "description": "Outline button hover text color",
+      "default": "#ffffff"
+    },
+    {
+      "name": "--outline-active-background-color",
+      "description": "Outline button active background color",
+      "default": "#0052a3"
+    },
+    {
+      "name": "--focus-outline-color",
+      "description": "Focus outline color for accessibility",
+      "default": "#0066cc"
+    }
+  ]
+}

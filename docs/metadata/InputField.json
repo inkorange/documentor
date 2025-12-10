@@ -1,0 +1,271 @@
+{
+  "component": {
+    "name": "InputField",
+    "description": "",
+    "filePath": "src/components/forms/InputField.tsx",
+    "props": {
+      "variant": {
+        "type": "InputFieldVariant",
+        "values": [
+          "default",
+          "success",
+          "error",
+          "warning"
+        ],
+        "optional": true,
+        "description": "Visual variant of the input field",
+        "renderVariants": true,
+        "hideInDocs": false
+      },
+      "size": {
+        "type": "InputFieldSize",
+        "values": [
+          "small",
+          "medium",
+          "large"
+        ],
+        "optional": true,
+        "description": "Size of the input field",
+        "renderVariants": true,
+        "hideInDocs": false
+      },
+      "label": {
+        "type": "string",
+        "optional": true,
+        "description": "Label text displayed above the input",
+        "renderVariants": false,
+        "hideInDocs": false
+      },
+      "helperText": {
+        "type": "string",
+        "optional": true,
+        "description": "Helper text displayed below the input",
+        "renderVariants": false,
+        "hideInDocs": false
+      },
+      "errorMessage": {
+        "type": "string",
+        "optional": true,
+        "description": "Error message to display (overrides helperText when present)",
+        "renderVariants": false,
+        "hideInDocs": false
+      },
+      "hasError": {
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the input field is in an error state",
+        "renderVariants": false,
+        "hideInDocs": false
+      },
+      "leftIcon": {
+        "type": "React.ReactNode",
+        "optional": true,
+        "description": "Icon to display on the left side of the input",
+        "renderVariants": false,
+        "hideInDocs": true
+      },
+      "rightIcon": {
+        "type": "React.ReactNode",
+        "optional": true,
+        "description": "Icon to display on the right side of the input",
+        "renderVariants": false,
+        "hideInDocs": true
+      },
+      "required": {
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the input field is required",
+        "renderVariants": false,
+        "hideInDocs": false
+      },
+      "fullWidth": {
+        "type": "boolean",
+        "optional": true,
+        "description": "Whether the input is full width",
+        "renderVariants": false,
+        "hideInDocs": false
+      }
+    },
+    "styleFiles": [
+      "./InputField.module.scss"
+    ]
+  },
+  "variants": [
+    {
+      "props": {
+        "variant": "default",
+        "size": "small"
+      },
+      "code": "<InputField variant=\"default\" size=\"small\" />"
+    },
+    {
+      "props": {
+        "variant": "default",
+        "size": "medium"
+      },
+      "code": "<InputField variant=\"default\" size=\"medium\" />"
+    },
+    {
+      "props": {
+        "variant": "default",
+        "size": "large"
+      },
+      "code": "<InputField variant=\"default\" size=\"large\" />"
+    },
+    {
+      "props": {
+        "variant": "success",
+        "size": "small"
+      },
+      "code": "<InputField variant=\"success\" size=\"small\" />"
+    },
+    {
+      "props": {
+        "variant": "success",
+        "size": "medium"
+      },
+      "code": "<InputField variant=\"success\" size=\"medium\" />"
+    },
+    {
+      "props": {
+        "variant": "success",
+        "size": "large"
+      },
+      "code": "<InputField variant=\"success\" size=\"large\" />"
+    },
+    {
+      "props": {
+        "variant": "error",
+        "size": "small"
+      },
+      "code": "<InputField variant=\"error\" size=\"small\" />"
+    },
+    {
+      "props": {
+        "variant": "error",
+        "size": "medium"
+      },
+      "code": "<InputField variant=\"error\" size=\"medium\" />"
+    },
+    {
+      "props": {
+        "variant": "error",
+        "size": "large"
+      },
+      "code": "<InputField variant=\"error\" size=\"large\" />"
+    },
+    {
+      "props": {
+        "variant": "warning",
+        "size": "small"
+      },
+      "code": "<InputField variant=\"warning\" size=\"small\" />"
+    },
+    {
+      "props": {
+        "variant": "warning",
+        "size": "medium"
+      },
+      "code": "<InputField variant=\"warning\" size=\"medium\" />"
+    },
+    {
+      "props": {
+        "variant": "warning",
+        "size": "large"
+      },
+      "code": "<InputField variant=\"warning\" size=\"large\" />"
+    }
+  ],
+  "cssVariables": [
+    {
+      "name": "--input-background-color",
+      "description": "Default input background color",
+      "default": "#ffffff"
+    },
+    {
+      "name": "--input-border-color",
+      "description": "Default input border color",
+      "default": "#d1d5db"
+    },
+    {
+      "name": "--input-text-color",
+      "description": "Default input text color",
+      "default": "#1f2937"
+    },
+    {
+      "name": "--input-placeholder-color",
+      "description": "Placeholder text color",
+      "default": "#9ca3af"
+    },
+    {
+      "name": "--input-focus-border-color",
+      "description": "Border color when focused",
+      "default": "#3b82f6"
+    },
+    {
+      "name": "--input-focus-shadow-color",
+      "description": "Shadow color when focused",
+      "default": "rgba(59, 130, 246, 0.1"
+    },
+    {
+      "name": "--input-disabled-background-color",
+      "description": "Background color when disabled",
+      "default": "#f3f4f6"
+    },
+    {
+      "name": "--input-disabled-text-color",
+      "description": "Text color when disabled",
+      "default": "#9ca3af"
+    },
+    {
+      "name": "--success-border-color",
+      "description": "Border color for success state",
+      "default": "#10b981"
+    },
+    {
+      "name": "--success-background-color",
+      "description": "Background color for success state",
+      "default": "#f0fdf4"
+    },
+    {
+      "name": "--error-border-color",
+      "description": "Border color for error state",
+      "default": "#ef4444"
+    },
+    {
+      "name": "--error-background-color",
+      "description": "Background color for error state",
+      "default": "#fef2f2"
+    },
+    {
+      "name": "--error-text-color",
+      "description": "Text color for error messages",
+      "default": "#ef4444"
+    },
+    {
+      "name": "--warning-border-color",
+      "description": "Border color for warning state",
+      "default": "#f59e0b"
+    },
+    {
+      "name": "--warning-background-color",
+      "description": "Background color for warning state",
+      "default": "#fffbeb"
+    },
+    {
+      "name": "--label-text-color",
+      "description": "Color for label text",
+      "default": "#374151"
+    },
+    {
+      "name": "--helper-text-color",
+      "description": "Color for helper text",
+      "default": "#6b7280"
+    },
+    {
+      "name": "--required-indicator-color",
+      "description": "Color for required asterisk",
+      "default": "#ef4444"
+    }
+  ]
+}

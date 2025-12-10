@@ -1,0 +1,96 @@
+/**
+  * CSS Variables used:
+  * --primary-background-color: Primary button background color
+  * --primary-background-hover-color: Primary button hover background color
+  * --primary-background-active-color: Primary button active background color
+  * --primary-text-color: Primary button text color
+  * --secondary-background-color: Secondary button background color
+  * --secondary-background-hover-color: Secondary button hover background color
+  * --secondary-background-active-color: Secondary button active background color
+  * --secondary-text-color: Secondary button text color
+  * --outline-border-color: Outline button border color
+  * --outline-text-color: Outline button text color
+  * --outline-hover-background-color: Outline button hover background color
+  * --outline-hover-text-color: Outline button hover text color
+  * --outline-active-background-color: Outline button active background color
+  * --focus-outline-color: Focus outline color for accessibility
+  *
+  * Styles for the Button component with support for multiple variants.
+  */
+
+.button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--focus-outline-color, #0066cc);
+    outline-offset: 2px;
+  }
+}
+
+/* Primary variant */
+.primary {
+  background-color: var(--primary-background-color, #0066cc);
+  color: var(--primary-text-color, #ffffff);
+  border-color: var(--primary-background-color, #0066cc);
+
+  &:hover:not(:disabled) {
+    background-color: var(--primary-background-hover-color, #0052a3);
+    border-color: var(--primary-background-hover-color, #0052a3);
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--primary-background-active-color, #003d7a);
+    border-color: var(--primary-background-active-color, #003d7a);
+  }
+}
+
+/* Secondary variant */
+.secondary {
+  background-color: var(--secondary-background-color, #6c757d);
+  color: var(--secondary-text-color, #ffffff);
+  border-color: var(--secondary-background-color, #6c757d);
+
+  &:hover:not(:disabled) {
+    background-color: var(--secondary-background-hover-color, #5a6268);
+    border-color: var(--secondary-background-hover-color, #5a6268);
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--secondary-background-active-color, #494f54);
+    border-color: var(--secondary-background-active-color, #494f54);
+  }
+}
+
+/* Outline variant */
+.outline {
+  background-color: transparent;
+  color: var(--outline-text-color, #0066cc);
+  border-color: var(--outline-border-color, #0066cc);
+
+  &:hover:not(:disabled) {
+    background-color: var(--outline-hover-background-color, #0066cc);
+    color: var(--outline-hover-text-color, #ffffff);
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--outline-active-background-color, #0052a3);
+    border-color: var(--outline-active-background-color, #0052a3);
+    color: var(--outline-hover-text-color, #ffffff);
+  }
+}

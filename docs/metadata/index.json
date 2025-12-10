@@ -1,0 +1,28 @@
+{
+  "config": {
+    "name": "Documentor Reference Components",
+    "description": "Reference component library for Documentor testing",
+    "version": "0.1.0"
+  },
+  "components": [
+    {
+      "name": "InputField",
+      "description": "",
+      "filePath": "src/components/forms/InputField.tsx",
+      "variantCount": 12,
+      "cssVariableCount": 18
+    },
+    {
+      "name": "Button",
+      "description": "",
+      "filePath": "src/components/forms/Button.tsx",
+      "variantCount": 3,
+      "cssVariableCount": 14
+    }
+  ],
+  "stats": {
+    "componentCount": 2,
+    "variantCount": 15,
+    "cssVariableCount": 32
+  }
+}
