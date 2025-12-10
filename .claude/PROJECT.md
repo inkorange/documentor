@@ -879,6 +879,1176 @@ const Button: React.FC<ButtonProps> = ({
 - [ ] Figma integration for design tokens
 - [ ] Custom documentation pages (MDX support)
 
+### Phase 5: Dynamic Theming & Token Management
+
+**Objective**: Enable real-time design token manipulation and theme switching in the documentation website, allowing users to experiment with different token values and swap complete theme files to preview how components respond to different design systems.
+
+#### Core Features
+
+##### 1. Real-Time Token Editor
+
+**Interactive CSS Variable Editor:**
+- Live editing of CSS variable values directly in the documentation UI
+- Visual editors for different token types:
+  - **Color picker** for color variables (with hex, RGB, HSL support)
+  - **Slider controls** for spacing, sizing, and numeric values
+  - **Dropdown selectors** for font families, weights, and predefined scales
+  - **Text input** for custom values
+- Changes apply instantly to all component previews
+- **Reset to defaults** button per variable or globally
+- **Copy current state** as CSS to clipboard
+
+**Token Organization:**
+- Group tokens by category:
+  - Colors (primary, secondary, semantic)
+  - Typography (fonts, sizes, weights, line heights)
+  - Spacing (padding, margin, gaps)
+  - Borders (radius, width, style)
+  - Shadows
+  - Transitions/animations
+- Collapsible sections for better organization
+- Search/filter tokens by name or category
+
+##### 2. Theme File System
+
+**Theme Configuration:**
+```json
+{
+  "themes": {
+    "enabled": true,
+    "defaultTheme": "default",
+    "themeDirectory": "./themes",
+    "allowCustomUpload": true
+  }
+}
+```
+
+**Theme File Structure:**
+Users can provide one or more theme files (CSS or SCSS) that define CSS variable overrides:
+
+```
+project/
+├── themes/
+│   ├── default.css          # Default theme
+│   ├── dark-mode.css        # Dark theme
+│   ├── high-contrast.css    # Accessibility theme
+│   └── brand-acme.css       # Customer brand theme
+└── documentor.config.json
+```
+
+**Example Theme File (`themes/dark-mode.css`):**
+```css
+/**
+ * Dark Mode Theme
+ * Overrides default design tokens for dark mode experience
+ */
+
+:root {
+  /* Colors */
+  --primary-color: #3b82f6;
+  --background-color: #1f2937;
+  --text-color: #f9fafb;
+  --border-color: #374151;
+
+  /* Component-specific */
+  --button-primary-bg: #3b82f6;
+  --button-primary-text: #ffffff;
+  --input-background: #374151;
+  --input-border: #4b5563;
+}
+```
+
+##### 3. Theme Switcher UI
+
+**Documentation Site Theme Selector:**
+- **Theme dropdown** in the documentation header/sidebar
+- **Preview mode**: Switch themes and see all components update instantly
+- **Compare mode**: View components side-by-side with different themes
+- **Theme metadata display**:
+  - Theme name and description
+  - Author information
+  - Number of tokens overridden
+  - Last modified date
+
+**Theme Switcher Component:**
+```typescript
+interface ThemeSwitcherProps {
+  availableThemes: Theme[];
+  currentTheme: string;
+  onThemeChange: (themeId: string) => void;
+}
+
+interface Theme {
+  id: string;
+  name: string;
+  description?: string;
+  filePath: string;
+  tokens: Record<string, string>;
+  metadata?: {
+    author?: string;
+    version?: string;
+    lastModified?: string;
+  };
+}
+```
+
+##### 4. Dynamic Theme Loading
+
+**Theme Parser:**
+- Scan `themeDirectory` for CSS/SCSS files
+- Parse and extract CSS variable declarations
+- Generate theme metadata index
+- Validate theme files for required tokens
+- Hot-reload themes during development
+
+**Runtime Theme Application:**
+```typescript
+// Theme application logic
+function applyTheme(theme: Theme) {
+  const root = document.documentElement;
+
+  // Apply each token override
+  Object.entries(theme.tokens).forEach(([variable, value]) => {
+    root.style.setProperty(variable, value);
+  });
+
+  // Store current theme in localStorage
+  localStorage.setItem('documentor-theme', theme.id);
+}
+```
+
+##### 5. Custom Theme Upload (Optional)
+
+**In-Browser Theme Testing:**
+- **Upload button** to load custom theme CSS files
+- **Drag-and-drop** interface for theme files
+- **Validation** to ensure proper CSS variable format
+- **Temporary application** (doesn't persist on reload)
+- **Export modified tokens** as new theme file
+
+**Upload Flow:**
+1. User selects/drags theme CSS file
+2. Parser extracts CSS variables
+3. Preview shows affected tokens
+4. User confirms application
+5. Theme applies to all components
+6. Option to download modified theme
+
+##### 6. Token Diff & Comparison
+
+**Visual Token Comparison:**
+- **Diff view** comparing current theme vs. default theme
+- **Highlight changes**: Show which tokens are overridden
+- **Impact analysis**: List components affected by each token
+- **Conflict detection**: Warn about missing or invalid token values
+
+**Comparison Table:**
+```
+Token Name              | Default Value | Current Theme | Status
+------------------------|---------------|---------------|--------
+--primary-color         | #0066cc       | #3b82f6      | Modified
+--background-color      | #ffffff       | #1f2937      | Modified
+--text-color            | #1f2937       | #f9fafb      | Modified
+--border-radius         | 0.375rem      | 0.375rem     | Unchanged
+```
+
+##### 7. Token Presets & Collections
+
+**Quick Theme Presets:**
+- **Material Design** token preset
+- **Tailwind CSS** token preset
+- **Bootstrap** token preset
+- **Custom presets** defined in config
+
+**Preset Configuration:**
+```json
+{
+  "themes": {
+    "presets": [
+      {
+        "name": "Material Design",
+        "tokens": {
+          "--primary-color": "#1976d2",
+          "--secondary-color": "#dc004e",
+          "--border-radius": "4px"
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Implementation Architecture
+
+##### Token State Management
+
+**React Context for Theme State:**
+```typescript
+interface ThemeContextValue {
+  currentTheme: Theme;
+  availableThemes: Theme[];
+  customTokens: Record<string, string>;
+  setTheme: (themeId: string) => void;
+  updateToken: (variable: string, value: string) => void;
+  resetToken: (variable: string) => void;
+  resetAllTokens: () => void;
+  exportTheme: () => string;
+}
+
+const ThemeContext = createContext<ThemeContextValue>(null);
+```
+
+**Token Override Layer:**
+```typescript
+// Priority: Custom Edits > Selected Theme > Component Defaults
+function resolveTokenValue(variable: string): string {
+  return (
+    customTokens[variable] ||        // User edits
+    currentTheme.tokens[variable] ||  // Active theme
+    defaultTokens[variable]           // Component default
+  );
+}
+```
+
+##### Component Architecture
+
+**New Components:**
+1. **`ThemeSwitcher.tsx`** - Theme dropdown selector
+2. **`TokenEditor.tsx`** - Real-time token editing panel
+3. **`ColorPicker.tsx`** - Color input with visual picker
+4. **`TokenDiff.tsx`** - Theme comparison view
+5. **`ThemeUpload.tsx`** - Custom theme file upload
+6. **`TokenInspector.tsx`** - Inspect tokens used by component
+
+**Enhanced ComponentPage:**
+```typescript
+<ComponentPage>
+  <ComponentHeader />
+
+  {/* New: Token Controls */}
+  <TokenControls
+    componentsTokens={extractedTokens}
+    onTokenChange={handleTokenUpdate}
+  />
+
+  {/* Existing: Component Details */}
+  <PropsTable />
+  <VariantShowcase />
+  <CSSVariablesTable />
+</ComponentPage>
+```
+
+##### CLI Enhancements
+
+**Theme Discovery:**
+```bash
+# Scan for theme files
+documentor scan-themes --directory ./themes
+
+# Validate theme file
+documentor validate-theme ./themes/custom.css
+
+# Generate theme template
+documentor create-theme --name "My Theme" --output ./themes/my-theme.css
+```
+
+**Build with Themes:**
+```bash
+# Build with specific theme as default
+documentor build --default-theme dark-mode
+
+# Generate documentation for all themes
+documentor build --all-themes
+```
+
+#### Configuration Schema Updates
+
+```json
+{
+  "themes": {
+    "enabled": true,
+    "defaultTheme": "default",
+    "themeDirectory": "./themes",
+    "allowCustomUpload": true,
+    "allowTokenEditing": true,
+
+    "presets": [
+      {
+        "name": "Material Design",
+        "description": "Google Material Design tokens",
+        "tokens": { /* ... */ }
+      }
+    ],
+
+    "categories": [
+      {
+        "name": "Colors",
+        "tokenPattern": "--*-color",
+        "editor": "color-picker"
+      },
+      {
+        "name": "Spacing",
+        "tokenPattern": "--spacing-*",
+        "editor": "slider",
+        "min": "0",
+        "max": "4rem",
+        "step": "0.25rem"
+      }
+    ]
+  }
+}
+```
+
+#### User Workflows
+
+**Workflow 1: Theme Switching**
+1. User opens documentation site
+2. Clicks theme selector in header
+3. Selects "Dark Mode" from dropdown
+4. All components update instantly with dark theme tokens
+5. User browses components to verify dark mode appearance
+
+**Workflow 2: Token Experimentation**
+1. User navigates to Button component page
+2. Opens "Design Tokens" panel
+3. Clicks on `--button-primary-bg` color swatch
+4. Adjusts color using picker
+5. Sees Button preview update in real-time
+6. Clicks "Copy Theme" to export custom token values
+
+**Workflow 3: Custom Theme Upload**
+1. Designer creates `brand.css` with company colors
+2. User drags `brand.css` into documentation site
+3. System parses and validates CSS variables
+4. Preview shows which components are affected
+5. User applies theme to see branded components
+6. User downloads generated theme file for production use
+
+#### Technical Implementation Details
+
+##### Theme File Parser
+
+**CSS Variable Extraction:**
+```typescript
+async function parseThemeFile(filePath: string): Promise<Theme> {
+  const content = await fs.readFile(filePath, 'utf-8');
+
+  // Extract CSS variables using PostCSS
+  const ast = postcss.parse(content);
+  const tokens: Record<string, string> = {};
+
+  ast.walkDecls(decl => {
+    if (decl.prop.startsWith('--')) {
+      tokens[decl.prop] = decl.value;
+    }
+  });
+
+  // Extract theme metadata from comments
+  const metadata = extractMetadata(content);
+
+  return {
+    id: path.basename(filePath, '.css'),
+    name: metadata.name || path.basename(filePath, '.css'),
+    description: metadata.description,
+    filePath,
+    tokens,
+    metadata
+  };
+}
+```
+
+##### Live Preview Updates
+
+**Component Re-rendering:**
+```typescript
+function ComponentPreview({ component, variant }) {
+  const { customTokens } = useTheme();
+
+  // Apply custom tokens to preview container
+  const style = useMemo(() => {
+    return Object.entries(customTokens).reduce((acc, [key, value]) => {
+      acc[key] = value;
+      return acc;
+    }, {} as React.CSSProperties);
+  }, [customTokens]);
+
+  return (
+    <div className="preview-container" style={style}>
+      {/* Component renders with updated tokens */}
+      <DynamicComponent {...variant.props} />
+    </div>
+  );
+}
+```
+
+##### Token Editor UI
+
+**Color Token Editor:**
+```typescript
+function ColorTokenEditor({ variable, value, onChange }) {
+  return (
+    <div className="token-editor">
+      <label>{variable}</label>
+
+      <div className="color-controls">
+        {/* Color swatch */}
+        <div
+          className="color-swatch"
+          style={{ backgroundColor: value }}
+          onClick={openColorPicker}
+        />
+
+        {/* Hex input */}
+        <input
+          type="text"
+          value={value}
+          onChange={e => onChange(variable, e.target.value)}
+        />
+
+        {/* Color picker popover */}
+        {showPicker && (
+          <ColorPicker
+            color={value}
+            onChange={color => onChange(variable, color)}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+#### Data Flow
+
+```
+1. Theme Discovery (Build Time)
+   └─> Scan themeDirectory for CSS files
+   └─> Parse each file to extract tokens
+   └─> Generate themes index JSON
+   └─> Include in website build
+
+2. Theme Selection (Runtime)
+   └─> User selects theme from dropdown
+   └─> Load theme tokens from index
+   └─> Apply to document root CSS variables
+   └─> Update all component previews
+
+3. Token Editing (Runtime)
+   └─> User modifies token in editor
+   └─> Update ThemeContext state
+   └─> Apply custom override to document root
+   └─> Component previews re-render with new value
+
+4. Theme Export
+   └─> Collect current token overrides
+   └─> Generate CSS file with variables
+   └─> Trigger download of tokens.css
+```
+
+#### Example Use Cases
+
+**Use Case 1: Design System Migration**
+A company migrating from Bootstrap to Tailwind can:
+1. Load Bootstrap theme (existing tokens)
+2. Create Tailwind theme (target tokens)
+3. Compare side-by-side
+4. Gradually migrate components
+5. Export final Tailwind token file
+
+**Use Case 2: Accessibility Testing**
+QA team can:
+1. Load high-contrast theme
+2. Verify all components meet WCAG standards
+3. Test with different color combinations
+4. Export accessible theme for production
+
+**Use Case 3: White-Label Products**
+SaaS companies can:
+1. Provide base component library
+2. Customers upload their brand tokens
+3. Preview customized components
+4. Download branded theme file
+5. Integrate into their application
+
+#### Deliverables
+
+**Phase 5 Completion Checklist:**
+- [ ] Theme file parser and validator
+- [ ] Theme discovery and indexing system
+- [ ] ThemeSwitcher UI component
+- [ ] TokenEditor panel with category support
+- [ ] Color picker for color tokens
+- [ ] Slider controls for numeric tokens
+- [ ] Real-time preview updates
+- [ ] Theme comparison/diff view
+- [ ] Custom theme upload functionality
+- [ ] Export current theme as CSS
+- [ ] Theme presets (Material, Tailwind, Bootstrap)
+- [ ] localStorage persistence for theme preference
+- [ ] Documentation for theme file format
+- [ ] CLI commands for theme management
+- [ ] Updated README with theming guide
+
+### Phase 6: Interactive Props Playground
+
+**Objective**: Enable real-time prop manipulation directly in the documentation website, allowing users to interactively change component prop values and see live updates in the preview. This creates an interactive playground experience where developers can experiment with different prop combinations without writing code.
+
+#### Core Features
+
+##### 1. Interactive Props Table
+
+**Enhanced Props Table with Live Controls:**
+Transform the existing read-only props table into an interactive control panel where each prop has an appropriate input control based on its type.
+
+**Prop Control Types:**
+
+| Prop Type | Control Type | Description |
+|-----------|--------------|-------------|
+| `'value1' \| 'value2' \| 'value3'` | **Select Dropdown** | Dropdown menu with all union type options |
+| `string` | **Text Input** | Free-form text input field |
+| `number` | **Number Input** | Numeric input with step controls |
+| `boolean` | **Toggle Switch** | On/off toggle or checkbox |
+| `React.ReactNode` (children) | **Textarea** | Multi-line text area for content |
+| Array types | **Array Editor** | Add/remove items interface |
+| Object types | **JSON Editor** | Code editor for object values |
+
+**Interactive Table Layout:**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ Prop          │ Type        │ Current Value    │ Control       │
+├─────────────────────────────────────────────────────────────────┤
+│ variant *     │ ButtonVar.. │ primary          │ [▼ Dropdown]  │
+│ size          │ ButtonSize  │ medium           │ [▼ Dropdown]  │
+│ disabled      │ boolean     │ false            │ [○ Toggle]    │
+│ children      │ ReactNode   │ Button Text      │ [Text Input]  │
+│ onClick       │ function    │ (not editable)   │ -             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+##### 2. Live Preview Synchronization
+
+**Real-Time Component Updates:**
+- Component preview updates instantly as props change
+- Maintains preview state while editing
+- Shows loading indicator during complex renders
+- Debouncing for text inputs to prevent excessive re-renders
+
+**Preview State Management:**
+```typescript
+interface PlaygroundState {
+  currentProps: Record<string, any>;
+  previewMode: 'live' | 'paused';
+  history: PropChange[];
+  isDirty: boolean;
+}
+
+interface PropChange {
+  propName: string;
+  oldValue: any;
+  newValue: any;
+  timestamp: number;
+}
+```
+
+##### 3. Prop Control Components
+
+**Dropdown Control (for Union Types):**
+```typescript
+interface PropDropdownProps {
+  propName: string;
+  propMeta: PropMetadata;
+  currentValue: string;
+  onChange: (propName: string, value: string) => void;
+}
+
+function PropDropdown({ propName, propMeta, currentValue, onChange }) {
+  return (
+    <select
+      value={currentValue}
+      onChange={e => onChange(propName, e.target.value)}
+      className="prop-control-dropdown"
+    >
+      {propMeta.values?.map(value => (
+        <option key={value} value={value}>
+          {value}
+        </option>
+      ))}
+    </select>
+  );
+}
+```
+
+**Text Input Control (for Strings):**
+```typescript
+function PropTextInput({ propName, propMeta, currentValue, onChange }) {
+  const [localValue, setLocalValue] = useState(currentValue);
+
+  // Debounce onChange to prevent excessive updates
+  const debouncedOnChange = useMemo(
+    () => debounce((value) => onChange(propName, value), 300),
+    [propName, onChange]
+  );
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setLocalValue(e.target.value);
+    debouncedOnChange(e.target.value);
+  };
+
+  return (
+    <input
+      type="text"
+      value={localValue}
+      onChange={handleChange}
+      placeholder={propMeta.exampleValue || propMeta.default || 'Enter value'}
+      className="prop-control-text"
+    />
+  );
+}
+```
+
+**Toggle Control (for Booleans):**
+```typescript
+function PropToggle({ propName, currentValue, onChange }) {
+  return (
+    <label className="prop-control-toggle">
+      <input
+        type="checkbox"
+        checked={currentValue}
+        onChange={e => onChange(propName, e.target.checked)}
+      />
+      <span className="toggle-slider" />
+    </label>
+  );
+}
+```
+
+**Number Input Control:**
+```typescript
+function PropNumberInput({ propName, propMeta, currentValue, onChange }) {
+  return (
+    <input
+      type="number"
+      value={currentValue}
+      onChange={e => onChange(propName, Number(e.target.value))}
+      step={propMeta.step || 1}
+      min={propMeta.min}
+      max={propMeta.max}
+      className="prop-control-number"
+    />
+  );
+}
+```
+
+##### 4. Playground Modes
+
+**Interactive Mode:**
+- Default mode with live prop editing
+- Preview updates in real-time
+- Props table shows current values with controls
+
+**Code-First Mode:**
+- JSX code editor for manual prop editing
+- Syntax highlighting and validation
+- Apply button to update preview
+
+**Split View Mode:**
+- Side-by-side props controls and preview
+- Larger preview area for complex components
+- Collapsible controls panel
+
+##### 5. Prop State Management
+
+**Playground Context:**
+```typescript
+interface PlaygroundContextValue {
+  currentProps: Record<string, any>;
+  updateProp: (propName: string, value: any) => void;
+  resetProp: (propName: string) => void;
+  resetAllProps: () => void;
+  previewMode: 'live' | 'paused';
+  setPreviewMode: (mode: 'live' | 'paused') => void;
+  exportCode: () => string;
+}
+
+const PlaygroundContext = createContext<PlaygroundContextValue>(null);
+```
+
+**Prop Resolution Strategy:**
+```typescript
+function resolveCurrentPropValue(
+  propName: string,
+  userValue: any,
+  defaultValue: any,
+  isOptional: boolean
+): any {
+  // Priority: User Edit > Default > Type Default
+  if (userValue !== undefined) return userValue;
+  if (defaultValue !== undefined) return defaultValue;
+  if (!isOptional) return getTypeDefaultValue(propMeta.type);
+  return undefined;
+}
+```
+
+##### 6. Enhanced Component Preview
+
+**Live Preview Component:**
+```typescript
+function LiveComponentPreview({
+  component,
+  playgroundProps
+}: LiveComponentPreviewProps) {
+  const [error, setError] = useState<Error | null>(null);
+
+  // Error boundary for prop validation errors
+  useEffect(() => {
+    setError(null);
+  }, [playgroundProps]);
+
+  if (error) {
+    return (
+      <div className="preview-error">
+        <h4>Preview Error</h4>
+        <p>{error.message}</p>
+        <button onClick={() => setError(null)}>Reset</button>
+      </div>
+    );
+  }
+
+  return (
+    <ErrorBoundary onError={setError}>
+      <div className="live-preview-container">
+        <DynamicComponent
+          component={component.name}
+          {...playgroundProps}
+        />
+      </div>
+    </ErrorBoundary>
+  );
+}
+```
+
+##### 7. Code Generation & Export
+
+**Live Code Display:**
+- Shows JSX code for current prop configuration
+- Updates as props change
+- Copy-to-clipboard functionality
+- Syntax highlighting
+
+**Generated Code Example:**
+```jsx
+// User adjusts props:
+// variant: 'secondary'
+// size: 'large'
+// disabled: true
+
+// Generated code updates to:
+<Button
+  variant="secondary"
+  size="large"
+  disabled={true}
+>
+  Button Text
+</Button>
+```
+
+**Export Options:**
+- Copy JSX snippet
+- Copy with imports
+- Download as component file
+- Share as URL (props encoded in query params)
+
+##### 8. Prop Validation & Constraints
+
+**Real-Time Validation:**
+```typescript
+interface PropValidator {
+  validate: (value: any) => ValidationResult;
+  errorMessage?: string;
+}
+
+interface ValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+// Example validators
+const validators: Record<string, PropValidator> = {
+  email: {
+    validate: (value: string) => ({
+      valid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+      error: 'Invalid email format'
+    })
+  },
+  url: {
+    validate: (value: string) => ({
+      valid: /^https?:\/\/.+/.test(value),
+      error: 'Invalid URL format'
+    })
+  }
+};
+```
+
+**Constraint Enforcement:**
+- Min/max values for numbers
+- String length limits
+- Allowed values for enums
+- Required prop indicators
+- Type coercion warnings
+
+##### 9. Preset Prop Combinations
+
+**Save & Load Presets:**
+```typescript
+interface PropPreset {
+  id: string;
+  name: string;
+  description?: string;
+  props: Record<string, any>;
+  createdAt: string;
+}
+
+// Example presets
+const presets: PropPreset[] = [
+  {
+    id: 'default',
+    name: 'Default',
+    props: { variant: 'primary', size: 'medium' }
+  },
+  {
+    id: 'large-secondary',
+    name: 'Large Secondary',
+    props: { variant: 'secondary', size: 'large' }
+  },
+  {
+    id: 'disabled-state',
+    name: 'Disabled State',
+    props: { variant: 'primary', disabled: true }
+  }
+];
+```
+
+**Preset Management:**
+- Load predefined presets
+- Save current prop state as custom preset
+- Share presets via URL
+- Import/export preset collections
+
+##### 10. Prop History & Undo/Redo
+
+**Change History Tracking:**
+```typescript
+interface PropHistory {
+  changes: PropChange[];
+  currentIndex: number;
+}
+
+function usePropHistory() {
+  const [history, setHistory] = useState<PropHistory>({
+    changes: [],
+    currentIndex: -1
+  });
+
+  const undo = () => {
+    if (history.currentIndex > 0) {
+      const previousChange = history.changes[history.currentIndex - 1];
+      applyChange(previousChange);
+      setHistory(prev => ({
+        ...prev,
+        currentIndex: prev.currentIndex - 1
+      }));
+    }
+  };
+
+  const redo = () => {
+    if (history.currentIndex < history.changes.length - 1) {
+      const nextChange = history.changes[history.currentIndex + 1];
+      applyChange(nextChange);
+      setHistory(prev => ({
+        ...prev,
+        currentIndex: prev.currentIndex + 1
+      }));
+    }
+  };
+
+  return { undo, redo, canUndo: history.currentIndex > 0, canRedo: history.currentIndex < history.changes.length - 1 };
+}
+```
+
+#### UI/UX Design
+
+##### Interactive Props Table Layout
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ Interactive Props                              [Reset All] [▶]  │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│ variant (required)                             ButtonVariant     │
+│ Controls the display variant                                     │
+│ ┌──────────────────────────────────────┐                        │
+│ │ primary ▼                            │                        │
+│ └──────────────────────────────────────┘                        │
+│ Values: primary | secondary | outline                           │
+│                                                                   │
+│ size                                           ButtonSize        │
+│ Size of the button                                               │
+│ ┌──────────────────────────────────────┐                        │
+│ │ medium ▼                             │                        │
+│ └──────────────────────────────────────┘                        │
+│                                                                   │
+│ disabled                                       boolean           │
+│ Whether the button is disabled                                   │
+│ ┌─────┐                                                          │
+│ │ ○   │ Off                                                      │
+│ └─────┘                                                          │
+│                                                                   │
+│ children                                       ReactNode         │
+│ Button content                                                   │
+│ ┌──────────────────────────────────────┐                        │
+│ │ Button Text                          │                        │
+│ └──────────────────────────────────────┘                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+##### Playground Toolbar
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ [◀ Undo] [Redo ▶] │ [↺ Reset] │ [Presets ▼] │ [</> Code] [📋] │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Implementation Architecture
+
+##### Component Structure
+
+```
+website/src/
+├── components/
+│   ├── playground/
+│   │   ├── PlaygroundContext.tsx       # Context provider
+│   │   ├── InteractivePropsTable.tsx   # Main props control panel
+│   │   ├── PropControl.tsx             # Generic prop control wrapper
+│   │   ├── PropDropdown.tsx            # Union type dropdown
+│   │   ├── PropTextInput.tsx           # String input
+│   │   ├── PropNumberInput.tsx         # Number input
+│   │   ├── PropToggle.tsx              # Boolean toggle
+│   │   ├── PropTextarea.tsx            # Children/text area
+│   │   ├── LivePreview.tsx             # Live component preview
+│   │   ├── CodeDisplay.tsx             # Generated JSX code
+│   │   ├── PlaygroundToolbar.tsx       # Undo/redo/reset controls
+│   │   ├── PresetSelector.tsx          # Preset management
+│   │   └── PropHistory.tsx             # History visualization
+│   └── ...
+└── ...
+```
+
+##### State Flow
+
+```
+User Interaction
+    ↓
+PropControl Component
+    ↓
+updateProp(propName, value)
+    ↓
+PlaygroundContext State Update
+    ↓
+    ├─> LivePreview Re-renders with new props
+    ├─> CodeDisplay Updates JSX
+    └─> PropHistory Records change
+```
+
+##### Prop Control Selection Logic
+
+```typescript
+function selectPropControl(propMeta: PropMetadata): React.ComponentType {
+  // Union types → Dropdown
+  if (propMeta.values && propMeta.values.length > 0) {
+    return PropDropdown;
+  }
+
+  // Boolean → Toggle
+  if (propMeta.type === 'boolean') {
+    return PropToggle;
+  }
+
+  // Number → Number Input
+  if (propMeta.type === 'number') {
+    return PropNumberInput;
+  }
+
+  // Children/ReactNode → Textarea
+  if (propMeta.type.includes('ReactNode') || propMeta.type.includes('React.ReactNode')) {
+    return PropTextarea;
+  }
+
+  // Function → Not Editable
+  if (propMeta.type.includes('=>') || propMeta.type.includes('Function')) {
+    return PropNotEditable;
+  }
+
+  // String → Text Input
+  if (propMeta.type === 'string') {
+    return PropTextInput;
+  }
+
+  // Default → Text Input
+  return PropTextInput;
+}
+```
+
+#### Configuration Schema Updates
+
+```json
+{
+  "playground": {
+    "enabled": true,
+    "defaultMode": "interactive",
+    "showCodePanel": true,
+    "enableHistory": true,
+    "historyLimit": 50,
+
+    "propControls": {
+      "enablePresets": true,
+      "enableUrlSharing": true,
+      "debounceDelay": 300
+    },
+
+    "validation": {
+      "enabled": true,
+      "showInlineErrors": true,
+      "blockInvalidValues": false
+    }
+  }
+}
+```
+
+#### User Workflows
+
+**Workflow 1: Interactive Prop Exploration**
+1. User navigates to Button component page
+2. Sees "Interactive Props" table with current values
+3. Clicks dropdown next to `variant` prop
+4. Selects "secondary" from options
+5. Button preview updates instantly to secondary variant
+6. User adjusts other props (size, disabled)
+7. Clicks "Copy Code" to get JSX with current props
+
+**Workflow 2: Creating Custom Examples**
+1. User opens InputField component
+2. Adjusts props to create specific state:
+   - variant: 'error'
+   - errorMessage: 'Email is required'
+   - placeholder: 'Enter your email'
+3. Preview shows error state
+4. User clicks "Save Preset" → names it "Email Error State"
+5. Preset saved for quick access later
+6. User exports code for documentation or testing
+
+**Workflow 3: Debugging Component Behavior**
+1. Developer testing disabled state behavior
+2. Toggles `disabled` prop on/off repeatedly
+3. Observes visual changes in real-time
+4. Combines with other props (variant, size)
+5. Tests edge cases by entering unusual values
+6. Uses undo/redo to compare states
+7. Identifies issue and fixes component
+
+#### Advanced Features (Future Extensions)
+
+**Multi-Component Composition:**
+- Edit props for multiple components simultaneously
+- Test component interactions
+- Preview compound component patterns
+
+**Responsive Preview:**
+- Toggle viewport sizes (mobile, tablet, desktop)
+- Test component behavior at different breakpoints
+
+**Event Simulation:**
+- Trigger onClick, onChange, onSubmit events
+- See console logs of event handlers
+- Test callback functionality
+
+**Performance Monitoring:**
+- Show render count
+- Highlight unnecessary re-renders
+- Display render time metrics
+
+**Accessibility Testing:**
+- Screen reader preview
+- Keyboard navigation testing
+- ARIA attribute validation
+
+#### Technical Considerations
+
+**Performance Optimization:**
+- Debounce text input changes
+- Memoize component previews
+- Lazy load heavy controls
+- Virtual scrolling for long prop lists
+
+**Error Handling:**
+- Catch render errors in preview
+- Validate prop values before applying
+- Show helpful error messages
+- Provide reset/fallback options
+
+**State Persistence:**
+- Save prop state to localStorage
+- Restore on page reload
+- Clear on manual reset
+- Export/import state
+
+**URL State Synchronization:**
+```typescript
+// Encode props in URL for sharing
+// Example: /components/Button?variant=secondary&size=large&disabled=true
+
+function encodePropsToUrl(props: Record<string, any>): string {
+  const params = new URLSearchParams();
+  Object.entries(props).forEach(([key, value]) => {
+    params.set(key, String(value));
+  });
+  return params.toString();
+}
+
+function decodePropsFromUrl(search: string): Record<string, any> {
+  const params = new URLSearchParams(search);
+  const props: Record<string, any> = {};
+  params.forEach((value, key) => {
+    props[key] = parseValue(value);
+  });
+  return props;
+}
+```
+
+#### Deliverables
+
+**Phase 6 Completion Checklist:**
+- [ ] PlaygroundContext for state management
+- [ ] InteractivePropsTable component
+- [ ] PropDropdown for union types
+- [ ] PropTextInput for strings
+- [ ] PropNumberInput for numbers
+- [ ] PropToggle for booleans
+- [ ] PropTextarea for ReactNode/children
+- [ ] LivePreview with error boundary
+- [ ] CodeDisplay with syntax highlighting
+- [ ] PlaygroundToolbar (undo/redo/reset)
+- [ ] PresetSelector and preset management
+- [ ] PropHistory tracking and visualization
+- [ ] URL state synchronization
+- [ ] localStorage persistence
+- [ ] Prop validation system
+- [ ] Code export functionality
+- [ ] Mobile-responsive controls
+- [ ] Keyboard accessibility
+- [ ] Documentation for playground features
+- [ ] Updated README with playground guide
+
 ## Future Enhancements
 
 ### Configuration Options

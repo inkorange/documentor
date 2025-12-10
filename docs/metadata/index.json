@@ -7,14 +7,14 @@
   "components": [
     {
       "name": "InputField",
-      "description": "",
+      "description": "InputField component - A flexible, accessible input field primitive with multiple variants and sizes.\nDesigned to be a standalone component for form inputs with built-in validation states.",
       "filePath": "src/components/forms/InputField.tsx",
       "variantCount": 12,
       "cssVariableCount": 18
     },
     {
       "name": "Button",
-      "description": "",
+      "description": "Button component that supports multiple variants. This is the example\nof the summary that can be added for these. Can I use code\nsnippets ike this? `<Button />`",
       "filePath": "src/components/forms/Button.tsx",
       "variantCount": 3,
       "cssVariableCount": 14

@@ -50,10 +50,26 @@ export class ComponentParser {
       const props = this.extractProps(propsInterface, sourceFile);
 
       // Find component description from JSDoc
-      const componentFunc = sourceFile.getFunctions().find(f => f.getName() === fileName) ||
-                           sourceFile.getVariableDeclaration(fileName);
+      const componentFunc = sourceFile.getFunctions().find((f: any) => f.getName() === fileName);
+      const componentVar = sourceFile.getVariableDeclaration(fileName);
 
-      const description = this.extractDescription(componentFunc);
+      let description = '';
+
+      // Try to get description from function
+      if (componentFunc) {
+        description = this.extractDescription(componentFunc);
+      }
+
+      // Try to get description from variable declaration's parent (VariableStatement)
+      if (!description && componentVar) {
+        const varStatement = componentVar.getParent()?.getParent(); // VariableDeclarationList -> VariableStatement
+        description = this.extractDescription(varStatement);
+      }
+
+      // If still no description, try the variable declaration itself
+      if (!description && componentVar) {
+        description = this.extractDescription(componentVar);
+      }
 
       // Find style imports
       const styleFiles = this.findStyleImports(sourceFile);
@@ -210,12 +226,49 @@ export class ComponentParser {
    * Extract component description from JSDoc
    */
   private extractDescription(node: any): string {
-    if (!node || typeof node.getJsDocs !== 'function') return '';
+    if (!node) return '';
 
-    const jsDocs = node.getJsDocs();
-    if (!jsDocs || jsDocs.length === 0) return '';
+    // Try method 1: getJsDocs (works for functions and VariableStatements)
+    if (typeof node.getJsDocs === 'function') {
+      const jsDocs = node.getJsDocs();
+      if (jsDocs && jsDocs.length > 0) {
+        const description = jsDocs[0].getDescription();
+        const desc = typeof description === 'string' ? description.trim() : '';
+        if (desc) return desc;
+      }
+    }
 
-    return jsDocs[0].getDescription().trim();
+    // Try method 2: Leading comment ranges (fallback for other node types)
+    if (typeof node.getLeadingCommentRanges === 'function') {
+      const sourceFile = node.getSourceFile();
+      if (sourceFile) {
+        const leadingComments = node.getLeadingCommentRanges();
+        if (leadingComments && leadingComments.length > 0) {
+          const sourceFileText = sourceFile.getFullText();
+
+          // Get the last comment (usually the JSDoc right before the declaration)
+          const lastComment = leadingComments[leadingComments.length - 1];
+          const commentText = sourceFileText.slice(lastComment.getPos(), lastComment.getEnd());
+
+          // Check if it's a JSDoc comment (starts with /**)
+          if (commentText.trim().startsWith('/**')) {
+            // Extract content between /** and */
+            const cleaned = commentText
+              .replace(/\/\*\*/, '')  // Remove /**
+              .replace(/\*\//, '')     // Remove */
+              .split('\n')
+              .map((line: string) => line.replace(/^\s*\*\s?/, '')) // Remove leading * from each line
+              .filter((line: string) => !line.trim().startsWith('@')) // Remove @tags
+              .join(' ')
+              .trim();
+
+            if (cleaned) return cleaned;
+          }
+        }
+      }
+    }
+
+    return '';
   }
 
   /**

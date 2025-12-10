@@ -4,9 +4,11 @@
 
 Documentor is a zero-config documentation tool that automatically generates comprehensive component documentation by parsing your existing React TypeScript components. No story files, no manual configuration—just point it at your components and go.
 
-## Current Status: Phase 1 (MVP)
+## Current Status: Phase 2 (Documentation Website)
 
-Phase 1 is complete! Documentor can now:
+**Phase 1 & 2 Complete!** Documentor now includes:
+
+### Phase 1 (MVP)
 - ✅ Parse React TypeScript components (`.tsx`, `.jsx`)
 - ✅ Extract props, types, and documentation from JSDoc/comments
 - ✅ Parse CSS/SCSS files to extract design tokens (CSS variables)
@@ -14,7 +16,17 @@ Phase 1 is complete! Documentor can now:
 - ✅ Generate comprehensive JSON metadata for each component
 - ✅ Watch files and rebuild automatically in dev mode
 
-**Coming in Phase 2:** React documentation website with live component previews
+### Phase 2 (Documentation Website)
+- ✅ Beautiful React-based documentation website
+- ✅ Sidebar navigation with component grouping
+- ✅ Component detail pages with full metadata
+- ✅ Interactive props tables with type information
+- ✅ Variant showcase with code examples
+- ✅ CSS variables table with color previews
+- ✅ Copy-to-clipboard functionality
+- ✅ Responsive design
+
+**Coming in Phase 3:** Live component rendering, search, and CI/CD integration
 
 ---
 
@@ -124,22 +136,43 @@ Add CSS variable documentation to your SCSS files:
 }
 ```
 
-### 4. Build Documentation
+### 4. Start the Documentation Server
 
 ```bash
-# Generate documentation
-npm run docs:build
-
-# Or with verbose output
-npm run docs:build -- --verbose
+# Start dev server with documentation website
+npm run docs:dev
 ```
 
 This will:
-1. Scan all files matching `source.include` patterns
-2. Parse component interfaces and extract prop metadata
-3. Parse style files and extract CSS variables
-4. Generate all variant combinations automatically
-5. Create JSON metadata files in `./docs/metadata/`
+1. Build the React documentation website (first time only, ~30 seconds)
+2. Scan all files matching `source.include` patterns
+3. Parse component interfaces and extract prop metadata
+4. Parse style files and extract CSS variables
+5. Generate all variant combinations automatically
+6. Start server at [http://localhost:6006](http://localhost:6006)
+7. Watch for file changes and auto-rebuild
+
+**Open [http://localhost:6006](http://localhost:6006)** to view your documentation!
+
+---
+
+## Viewing Your Documentation
+
+Once the dev server is running, you'll see:
+
+- **Home Page** - Overview with stats and component cards
+- **Sidebar Navigation** - Browse components grouped by directory
+- **Component Pages** - Detailed docs for each component including:
+  - Component description and metadata
+  - Interactive props table with types
+  - All generated variants with code examples
+  - CSS variables table with color previews
+  - Copy-to-clipboard for all code snippets
+
+**Example URLs:**
+- Homepage: `http://localhost:6006/`
+- Button component: `http://localhost:6006/components/Button`
+- InputField component: `http://localhost:6006/components/InputField`
 
 ---
 
@@ -186,9 +219,9 @@ npm run documentor build --base-url /my-components/
 │   └── InputField.json     # InputField component metadata
 ```
 
-### `dev` - Development Server (Coming Soon)
+### `dev` - Development Server
 
-Start development server with file watching and hot reload.
+Start development server with file watching, hot reload, and documentation website.
 
 ```bash
 npm run docs:dev
@@ -199,11 +232,23 @@ npm run docs:dev
 - `-c, --config <path>` - Path to config file
 
 **What it does:**
-- Watches component and style files for changes
-- Rebuilds metadata automatically when files change
-- Serves documentation website (Phase 2)
+1. Builds the React documentation website
+2. Generates component metadata from your source files
+3. Starts Express server on port 6006
+4. Watches component and style files for changes
+5. Rebuilds metadata automatically when files change
+6. Serves the documentation website at [http://localhost:6006](http://localhost:6006)
 
-### `serve` - Serve Built Documentation (Coming Soon)
+**First time setup:**
+The first run will build the website, which takes about 30 seconds. Subsequent runs are instant.
+
+**After running:**
+- Open [http://localhost:6006](http://localhost:6006) in your browser
+- Navigate using the sidebar
+- Click on components to see their documentation
+- Changes to your components will trigger automatic rebuilds
+
+### `serve` - Serve Built Documentation
 
 Serve the built documentation site.
 
@@ -595,15 +640,18 @@ Running `npm run docs:build` with the Button component:
 - ✅ JSON metadata generation
 - ✅ File watching
 
-### 🚧 Phase 2: Documentation Website (In Progress)
-- [ ] React SPA for documentation
-- [ ] Sidebar navigation
-- [ ] Component pages with live previews
-- [ ] Props table
-- [ ] CSS variables table
-- [ ] Variant showcase
-- [ ] Code snippets with copy
-- [ ] Search functionality
+### ✅ Phase 2: Documentation Website (Complete)
+- ✅ React SPA for documentation
+- ✅ Sidebar navigation with component grouping
+- ✅ Component pages with metadata display
+- ✅ Props table with types and descriptions
+- ✅ CSS variables table with color previews
+- ✅ Variant showcase with code examples
+- ✅ Code snippets with copy-to-clipboard
+- ✅ Responsive design
+- ✅ Development server integration
+- [ ] Search functionality (Phase 3)
+- [ ] Live component rendering (Phase 3)
 
 ### 📋 Phase 3: CI/CD & Deployment
 - [ ] Static HTML export

@@ -1,0 +1,57 @@
+export interface PropMetadata {
+  type: string;
+  values?: string[];
+  optional: boolean;
+  default?: string;
+  description?: string;
+  renderVariants?: boolean;
+  hideInDocs?: boolean;
+  exampleValue?: string;
+}
+
+export interface ComponentMetadata {
+  name: string;
+  description: string;
+  filePath: string;
+  props: Record<string, PropMetadata>;
+  styleFiles: string[];
+}
+
+export interface VariantExample {
+  props: Record<string, any>;
+  code: string;
+}
+
+export interface CSSVariable {
+  name: string;
+  description: string;
+  default?: string;
+}
+
+export interface ComponentDocumentation {
+  component: ComponentMetadata;
+  variants: VariantExample[];
+  cssVariables: CSSVariable[];
+}
+
+export interface ComponentSummary {
+  name: string;
+  description: string;
+  filePath: string;
+  variantCount: number;
+  cssVariableCount: number;
+}
+
+export interface IndexMetadata {
+  config: {
+    name: string;
+    description?: string;
+    version?: string;
+  };
+  components: ComponentSummary[];
+  stats: {
+    componentCount: number;
+    variantCount: number;
+    cssVariableCount: number;
+  };
+}
