@@ -1,0 +1,10 @@
+{
+  "name": "documentor-website",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "react-router-dom": "^6.21.0"
+  }
+}

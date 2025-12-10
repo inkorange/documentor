@@ -19,18 +19,20 @@
     "chokidar": "^3.5.3",
     "express": "^4.18.2",
     "ws": "^8.16.0",
-    "glob": "^10.3.10"
+    "glob": "^10.3.10",
+    "react-router-dom": "^6.21.0"
   },
   "bin": {
     "documentor": "./bin/documentor.js"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cd website && BROWSER=none PORT=3000 react-scripts start",
     "build": "react-scripts build",
+    "build:website": "cd website && BUILD_PATH=../website/build react-scripts build && cd ..",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "documentor": "node ./bin/documentor.js",
-    "docs:dev": "node ./bin/documentor.js dev",
+    "docs:dev": "npm run build:website && node ./bin/documentor.js dev",
     "docs:build": "node ./bin/documentor.js build --verbose",
     "docs:serve": "node ./bin/documentor.js serve"
   },

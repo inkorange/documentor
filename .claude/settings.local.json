@@ -3,7 +3,10 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(chmod:*)",
-      "Bash(npm run docs:build:*)"
+      "Bash(npm run docs:build:*)",
+      "Bash(npm run build:website:*)",
+      "Bash(cat:*)",
+      "Bash(node:*)"
     ]
   }
 }

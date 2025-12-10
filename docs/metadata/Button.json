@@ -1,7 +1,7 @@
 {
   "component": {
     "name": "Button",
-    "description": "",
+    "description": "Button component that supports multiple variants. This is the example\nof the summary that can be added for these. Can I use code\nsnippets ike this? `<Button />`",
     "filePath": "src/components/forms/Button.tsx",
     "props": {
       "variant": {

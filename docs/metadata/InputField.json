@@ -1,7 +1,7 @@
 {
   "component": {
     "name": "InputField",
-    "description": "",
+    "description": "InputField component - A flexible, accessible input field primitive with multiple variants and sizes.\nDesigned to be a standalone component for form inputs with built-in validation states.",
     "filePath": "src/components/forms/InputField.tsx",
     "props": {
       "variant": {

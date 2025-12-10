@@ -1,0 +1,18 @@
+.app {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-color, #ffffff);
+  color: var(--text-color, #1f2937);
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 280px;
+  max-width: 1400px;
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+    padding: 1rem;
+  }
+}

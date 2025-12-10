@@ -12,7 +12,9 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 /**
- * Button component that supports multiple variants.
+ * Button component that supports multiple variants. This is the example
+ * of the summary that can be added for these. Can I use code
+ * snippets ike this? `<Button />`
  */
 const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
