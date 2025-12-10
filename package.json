@@ -1,26 +1,39 @@
 {
   "name": "documentor",
   "version": "0.1.0",
-  "private": true,
+  "description": "Automatic documentation generator for React components with live previews and variant showcases",
+  "keywords": ["documentation", "react", "components", "storybook", "design-system"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/documentor"
+  },
+  "files": [
+    "bin/",
+    "cli/",
+    "config/",
+    "generator/",
+    "parser/",
+    "scripts/",
+    "template/",
+    "tsconfig.cli.json"
+  ],
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
-    "react-scripts": "5.0.1",
-    "sass": "^1.95.0",
-    "web-vitals": "^2.1.4",
-    "ts-morph": "^21.0.0",
+    "chokidar": "^3.5.3",
+    "commander": "^11.1.0",
+    "express": "^4.18.2",
+    "glob": "^10.3.10",
     "postcss": "^8.4.32",
     "postcss-scss": "^4.0.9",
-    "commander": "^11.1.0",
-    "chokidar": "^3.5.3",
-    "express": "^4.18.2",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "react-router-dom": "^6.21.0",
+    "react-scripts": "5.0.1",
+    "sass": "^1.95.0",
+    "ts-morph": "^21.0.0",
+    "web-vitals": "^2.1.4",
     "ws": "^8.16.0",
-    "glob": "^10.3.10",
-    "react-router-dom": "^6.21.0"
+    "zod": "^4.1.13"
   },
   "bin": {
     "documentor": "./bin/documentor.js"
@@ -28,11 +41,15 @@
   "scripts": {
     "start": "cd website && BROWSER=none PORT=3000 react-scripts start",
     "build": "react-scripts build",
-    "build:website": "cd website && BUILD_PATH=../website/build react-scripts build && cd ..",
+    "copy-components": "node ./scripts/copy-components.js",
+    "copy-docs-assets": "node ./scripts/copy-docs-assets.js",
+    "build:website": "npm run copy-components && cd website && BUILD_PATH=../website/build react-scripts build && cd ..",
+    "build:template": "node ./scripts/build-template.js",
+    "prepublishOnly": "npm run build:template",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "documentor": "node ./bin/documentor.js",
-    "docs:dev": "npm run build:website && node ./bin/documentor.js dev",
+    "docs:dev": "npm run docs:build && npm run build:website && npm run copy-docs-assets && node ./bin/documentor.js dev",
     "docs:build": "node ./bin/documentor.js build --verbose",
     "docs:serve": "node ./bin/documentor.js serve"
   },
@@ -55,12 +72,16 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.10.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@types/node": "^20.10.0",
-    "@types/express": "^4.17.21",
     "@types/ws": "^8.5.10",
-    "typescript": "^5.3.3",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }

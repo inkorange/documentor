@@ -1,0 +1,67 @@
+.live-preview-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  min-height: 100px;
+}
+
+.live-preview-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.live-preview-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  background: #f8f9fa;
+  border: 2px dashed #cbd5e0;
+  border-radius: 0.5rem;
+  color: #718096;
+  text-align: center;
+  min-height: 100px;
+
+  .component-tag {
+    font-family: 'Courier New', monospace;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #4a5568;
+  }
+
+  .preview-note {
+    font-size: 0.875rem;
+    color: #a0aec0;
+  }
+
+  .preview-hint {
+    font-size: 0.75rem;
+    color: #cbd5e0;
+    font-style: italic;
+  }
+}
+
+.live-preview-error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 0.5rem;
+  color: #c53030;
+
+  .error-icon {
+    font-size: 1.25rem;
+  }
+
+  .error-message {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+}

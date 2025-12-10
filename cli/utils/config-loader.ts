@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { DocumentorConfig, defaultConfig } from '../../config/schema';
+import { DocumentorConfigSchema, formatValidationError } from '../../config/validation';
+import { ZodError } from 'zod';
 
 export async function loadConfig(configPath: string): Promise<DocumentorConfig> {
   const resolvedPath = path.resolve(configPath);
@@ -19,7 +21,7 @@ export async function loadConfig(configPath: string): Promise<DocumentorConfig> 
     const userConfig = JSON.parse(fileContent);
 
     // Merge with defaults
-    const config: DocumentorConfig = {
+    const mergedConfig = {
       ...defaultConfig,
       ...userConfig,
       source: {
@@ -44,8 +46,26 @@ export async function loadConfig(configPath: string): Promise<DocumentorConfig> 
       },
     };
 
-    return config;
+    // Validate configuration with Zod
+    try {
+      const validatedConfig = DocumentorConfigSchema.parse(mergedConfig);
+      console.log('✅ Configuration validated successfully\n');
+      return validatedConfig as unknown as DocumentorConfig;
+    } catch (validationError) {
+      if (validationError instanceof ZodError) {
+        const errorMessage = formatValidationError(validationError);
+        console.error(`❌ ${errorMessage}\n`);
+        console.error('Please fix the configuration errors and try again.\n');
+        process.exit(1);
+      }
+      throw validationError;
+    }
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      console.error(`❌ Invalid JSON in config file: ${resolvedPath}`);
+      console.error(`   ${error.message}\n`);
+      process.exit(1);
+    }
     console.error(`❌ Error loading config file: ${error}`);
     throw error;
   }

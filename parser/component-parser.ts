@@ -8,6 +8,7 @@ export interface PropMetadata {
   default?: string;
   description?: string;
   renderVariants?: boolean;
+  displayTemplate?: string;
   hideInDocs?: boolean;
   exampleValue?: string;
 }
@@ -47,7 +48,7 @@ export class ComponentParser {
         return null;
       }
 
-      const props = this.extractProps(propsInterface, sourceFile);
+      const props = this.extractProps(propsInterface, sourceFile, fileName);
 
       // Find component description from JSDoc
       const componentFunc = sourceFile.getFunctions().find((f: any) => f.getName() === fileName);
@@ -98,7 +99,7 @@ export class ComponentParser {
   /**
    * Extract prop metadata from interface
    */
-  private extractProps(propsInterface: InterfaceDeclaration, sourceFile: any): Record<string, PropMetadata> {
+  private extractProps(propsInterface: InterfaceDeclaration, sourceFile: any, fileName: string): Record<string, PropMetadata> {
     const props: Record<string, PropMetadata> = {};
 
     for (const prop of propsInterface.getProperties()) {
@@ -135,7 +136,10 @@ export class ComponentParser {
       const values = this.extractUnionValues(prop.getTypeNode());
 
       // Try to find default value from component implementation
-      const defaultValue = this.findDefaultValue(sourceFile, propName);
+      const componentFunc = sourceFile.getFunctions().find((f: any) => f.getName() === fileName);
+      const componentVar = sourceFile.getVariableDeclaration(fileName);
+      const componentNode = componentFunc || componentVar;
+      const defaultValue = this.findDefaultValue(componentNode, propName);
 
       props[propName] = {
         type: typeText,
@@ -144,6 +148,7 @@ export class ComponentParser {
         default: defaultValue,
         description,
         renderVariants: tags.renderVariants === 'true',
+        displayTemplate: tags.displayTemplate,
         hideInDocs: tags.hideInDocs === 'true',
         exampleValue: tags.exampleValue,
       };
@@ -274,19 +279,28 @@ export class ComponentParser {
   /**
    * Find default prop values in component implementation
    */
-  private findDefaultValue(sourceFile: any, propName: string): string | undefined {
-    // Look for destructuring defaults in function parameters
-    const functions = sourceFile.getFunctions();
-    const variables = sourceFile.getVariableDeclarations();
+  private findDefaultValue(componentNode: any, propName: string): string | undefined {
+    if (!componentNode) return undefined;
 
-    for (const func of [...functions, ...variables]) {
-      const params = func.getParameters?.() || [];
-      for (const param of params) {
-        const binding = param.getNameNode();
-        if (binding && binding.getKind() === SyntaxKind.ObjectBindingPattern) {
-          for (const element of binding.getElements()) {
-            if (element.getName() === propName && element.getInitializer()) {
-              return element.getInitializer()?.getText();
+    // For variable declarations (const Component = ...), check the initializer
+    let targetNode = componentNode;
+    if (typeof componentNode.getInitializer === 'function') {
+      targetNode = componentNode.getInitializer();
+    }
+
+    // Get parameters from the function/arrow function
+    const params = targetNode.getParameters?.() || [];
+
+    for (const param of params) {
+      const binding = param.getNameNode();
+      if (binding && binding.getKind() === SyntaxKind.ObjectBindingPattern) {
+        for (const element of binding.getElements()) {
+          if (element.getName() === propName) {
+            const initializer = element.getInitializer();
+            if (initializer) {
+              const text = initializer.getText();
+              // Remove quotes from string literals for cleaner display
+              return text.replace(/^['"]|['"]$/g, '');
             }
           }
         }

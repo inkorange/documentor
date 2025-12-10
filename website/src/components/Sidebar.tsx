@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { fetchIndex } from '../utils/api';
 import { IndexMetadata } from '../types/metadata';
+import ThemeSwitcher from './ThemeSwitcher';
 import './Sidebar.scss';
 
 const Sidebar: React.FC = () => {
@@ -86,6 +87,8 @@ const Sidebar: React.FC = () => {
           <span className="stat-label">CSS Vars</span>
         </div>
       </div>
+
+      <ThemeSwitcher />
 
       <nav className="sidebar-nav">
         {Object.entries(componentsByPath).map(([directory, components]) => (

@@ -6,7 +6,18 @@
       "Bash(npm run docs:build:*)",
       "Bash(npm run build:website:*)",
       "Bash(cat:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run copy-docs-assets:*)",
+      "Bash(timeout 10 npm run docs:dev:*)",
+      "Bash(npm run docs:dev:*)",
+      "Bash(tee:*)",
+      "Bash(python3:*)",
+      "Bash(git rm:*)",
+      "Bash(npm run build:template:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(npm run docs:serve:*)"
     ]
   }
 }

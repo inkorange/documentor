@@ -5,6 +5,8 @@ import { ComponentDocumentation } from '../types/metadata';
 import PropsTable from '../components/PropsTable';
 import VariantShowcase from '../components/VariantShowcase';
 import CSSVariablesTable from '../components/CSSVariablesTable';
+import CoverageBadge from '../components/CoverageBadge';
+import CoveragePanel from '../components/CoveragePanel';
 import './ComponentPage.scss';
 
 const ComponentPage: React.FC = () => {
@@ -81,6 +83,7 @@ const ComponentPage: React.FC = () => {
             <span className="meta-label">CSS Variables:</span>
             <span className="meta-value">{doc.cssVariables.length}</span>
           </span>
+          <CoverageBadge coverage={doc.coverage} />
         </div>
       </header>
 
@@ -90,6 +93,8 @@ const ComponentPage: React.FC = () => {
       </section>
 
       <VariantShowcase componentName={doc.component.name} variants={doc.variants} />
+
+      <CoveragePanel coverage={doc.coverage} />
 
       {doc.cssVariables.length > 0 && <CSSVariablesTable variables={doc.cssVariables} />}
     </div>
