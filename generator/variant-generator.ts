@@ -170,6 +170,12 @@ export class VariantGenerator {
     if (trimmed === 'false') return false;
     if (!isNaN(Number(trimmed))) return Number(trimmed);
 
+    // Check if it's a JSX/React element (starts with < and ends with >)
+    if (trimmed.startsWith('<') && trimmed.endsWith('>')) {
+      // Return the JSX string as-is for React.ReactNode props
+      return trimmed;
+    }
+
     return trimmed;
   }
 

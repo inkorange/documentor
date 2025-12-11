@@ -1339,7 +1339,7 @@ SaaS companies can:
 
 #### Deliverables
 
-**Phase 5 Completion Checklist:**
+**Phase 6 Completion Checklist:**
 - [ ] Theme file parser and validator
 - [ ] Theme discovery and indexing system
 - [ ] ThemeSwitcher UI component
@@ -4699,7 +4699,136 @@ npx documentor@latest build
 
 ---
 
-### Phase 5: NPM Publishing & Automated Version Management
+### Phase 5: Interactive Live Property Editor
+
+**Goal**: Enable real-time component testing through an interactive property editor in the documentation interface, allowing users to modify prop values and see live updates.
+
+**Status**: ✅ Completed
+
+#### Overview
+
+This phase introduces an interactive property editor that displays as options to update within the Properties table on each component's documentation page. Users can edit prop values in real-time and see the component re-render immediately with the new values, providing an interactive playground for testing component behavior.
+
+The component that it updates in realtime is a single rendering that sites above the Properties table.
+
+The variant examples will display under the Properties table as they do already today.
+
+**Key Features**:
+1. Add a new interactive cell within the row of each prop in the Properties table that will create an updated live preview instance above the Properties table.
+2. Editable inputs for each prop based on prop type
+3. Real-time component re-rendering on value changes
+4. Smart input controls (text inputs, checkboxes, dropdowns, etc.)
+5. Synchronized state between editor and preview
+6. Reset to default values functionality
+
+#### 5.1: Property Editor UI Component
+
+**Goal**: Create the interactive property editor interface
+
+**Tasks**:
+- [x] Update the existing properties table component, adding the new interactive cell
+- [x] Design UI layout (above Properties table) for the real-time updating web component based on the property values being changed in the table.
+- [x] Add input controls for different prop types
+- [x] Implement prop value state management
+- [x] Add reset button to restore defaults
+- [x] Style the editor interface.
+- [x] Ensure the new component real-time renderer above the properties table inherits the same theme style sheets like the variant example renderings do.
+
+**Input Control Types**:
+- **string**: Text input field
+- **number**: Number input field
+- **boolean**: Checkbox or toggle switch
+- **enum/union**: Dropdown select
+- **React.ReactNode**: Textarea for HTML/JSX (with dangerouslySetInnerHTML)
+- **object**: JSON editor or nested inputs
+- **array**: Dynamic list with add/remove
+
+#### 5.2: Live Preview Integration
+
+**Goal**: Connect the property editor to the LivePreview component
+
+**Tasks**:
+- [x] Update component page to include PropertyEditor
+- [x] Implement state management for edited props
+- [x] Pass edited props to LivePreview component
+- [x] Ensure real-time updates on prop changes
+- [x] Handle component re-rendering errors gracefully
+
+**Integration Flow**:
+```typescript
+[PropertyEditor]
+    ↓ (updates state)
+[Component Page State]
+    ↓ (passes props)
+[LivePreview]
+    ↓ (renders)
+[Actual Component]
+```
+
+#### 5.3: Type-Aware Input Generation
+
+**Goal**: Automatically generate appropriate input controls based on prop types
+
+**Tasks**:
+- [x] Read prop metadata (type, values, optional, default)
+- [x] Map TypeScript types to input control types
+- [x] Generate input controls dynamically
+- [x] Handle complex types (objects, arrays, functions)
+- [x] Validate input values against type constraints
+- [x] Show type hints in the UI
+
+**Type Mapping**:
+```typescript
+{
+  'string': <input type="text" />,
+  'number': <input type="number" />,
+  'boolean': <input type="checkbox" />,
+  'enum': <select>{values.map(...)}</select>,
+  'React.ReactNode': <textarea />
+}
+```
+
+#### 5.4: State Persistence (Optional)
+
+**Goal**: Persist edited values across page reloads
+
+**Tasks**:
+- [ ] Save edited props to localStorage
+- [ ] Restore saved props on page load
+- [ ] Add "Clear saved values" button
+- [ ] Handle version conflicts
+
+**Success Criteria**:
+- ✅ Property editor displays above Properties table
+- ✅ Each prop has appropriate input control
+- ✅ Component re-renders immediately on prop changes
+- ✅ Input validation prevents invalid values
+- ✅ Reset button restores default values
+- ✅ Works with all prop types (string, number, boolean, React.ReactNode, etc.)
+- ✅ Graceful error handling for invalid props
+
+---
+
+**Phase 6 Completion Checklist:**
+
+- [ ] PropertyEditor component created
+- [ ] Input controls for all prop types implemented
+- [ ] Live preview integration working
+- [ ] Real-time updates functional
+- [ ] Reset functionality implemented
+- [ ] Error handling for invalid values
+- [ ] UI styling completed
+- [ ] Tested with all example components
+
+---
+
+**Date**: December 11, 2024
+**Phase**: 5 - Interactive Live Property Editor
+**Status**: Planned
+
+---
+
+### Phase 6: NPM Publishing & Automated Version Management
 
 **Goal**: Set up automated npm publishing workflow with version management, changelog generation, and GitHub Actions integration for seamless releases.
 
@@ -4715,7 +4844,7 @@ This phase establishes a professional release workflow using Changesets for sema
 4. Publish to npm registry on merge to main
 5. Create GitHub releases with changelog notes
 
-#### 5.1: Changesets Setup
+#### 6.1: Changesets Setup
 
 **Goal**: Install and configure Changesets for version management
 
@@ -4762,7 +4891,7 @@ This phase establishes a professional release workflow using Changesets for sema
 5. Commit changeset file with code changes
 6. Submit PR
 
-#### 5.2: GitHub Actions - CI Workflow
+#### 6.2: GitHub Actions - CI Workflow
 
 **Goal**: Create automated testing and validation workflow
 
@@ -4819,7 +4948,7 @@ jobs:
           fi
 ```
 
-#### 5.3: GitHub Actions - Release Workflow
+#### 6.3: GitHub Actions - Release Workflow
 
 **Goal**: Automate version bump PRs and npm publishing
 
@@ -4896,7 +5025,7 @@ jobs:
           body: ${{ steps.changesets.outputs.changelog }}
 ```
 
-#### 5.4: NPM Configuration
+#### 6.4: NPM Configuration
 
 **Goal**: Configure package.json for npm publishing
 
@@ -4941,7 +5070,7 @@ jobs:
 }
 ```
 
-#### 5.5: GitHub Repository Setup
+#### 6.5: GitHub Repository Setup
 
 **Goal**: Configure GitHub repository secrets and settings
 
@@ -4968,7 +5097,7 @@ jobs:
 - Require pull request reviews: ✅ (optional)
 - Require linear history: ✅ (optional)
 
-#### 5.6: Documentation & Contributing Guide
+#### 6.6: Documentation & Contributing Guide
 
 **Goal**: Document the release process for maintainers and contributors
 
@@ -5010,7 +5139,7 @@ We use [Changesets](https://github.com/changesets/changesets) for version manage
 5. GitHub release is created automatically
 ```
 
-#### 5.7: Pre-Release Testing
+#### 6.7: Pre-Release Testing
 
 **Goal**: Validate the publishing workflow before going live
 
@@ -5040,7 +5169,7 @@ npx documentor serve
 ls node_modules/documentor/template/
 ```
 
-#### 5.8: First Release
+#### 6.8: First Release
 
 **Goal**: Successfully publish v1.0.0 to npm
 
@@ -5093,7 +5222,7 @@ ls node_modules/documentor/template/
 - NPM registry account
 - GitHub repository with Actions enabled
 
-#### Future Enhancements (Phase 5.5+)
+#### Future Enhancements (Phase 6.5+)
 
 1. **Pre-release channels**: Support alpha/beta releases
 2. **Automated dependency updates**: Dependabot integration
@@ -5104,7 +5233,7 @@ ls node_modules/documentor/template/
 
 ---
 
-**Phase 5 Completion Checklist:**
+**Phase 6 Completion Checklist:**
 
 - [ ] Changesets installed and configured
 - [ ] `.changeset/config.json` created
@@ -5121,7 +5250,7 @@ ls node_modules/documentor/template/
 ---
 
 **Date**: December 10, 2024
-**Phase**: 5 - NPM Publishing & Automated Version Management
+**Phase**: 6 - NPM Publishing & Automated Version Management
 **Status**: Planned
 
 ---
@@ -5208,9 +5337,44 @@ This section consolidates all development phases for the Documentor project. Com
 
 ## Planned Phases
 
-### 📋 Phase 5: NPM Publishing & Automated Version Management
+### 📋 Phase 5: Interactive Live Property Editor
 **Status**: Planned
 **Priority**: High (next phase)
+
+**Goals**:
+- Create interactive property editor for real-time component testing
+- Enable live prop value editing in documentation interface
+- Display single live preview above Properties table
+- Support all prop types with appropriate input controls
+- Implement real-time component re-rendering
+
+**Sub-tasks**:
+- 5.1: Property Editor UI Component
+- 5.2: Live Preview Integration
+- 5.3: Type-Aware Input Generation
+- 5.4: State Persistence (Optional)
+
+**Deliverables**:
+- `PropertyEditor.tsx` component
+- Input controls for all prop types (string, number, boolean, enum, React.ReactNode, object, array)
+- Real-time preview updates
+- Reset functionality
+- Error handling for invalid values
+
+**Key Features**:
+- Text inputs for strings
+- Number inputs for numbers
+- Checkboxes/toggles for booleans
+- Dropdowns for enums/unions
+- Textareas for React.ReactNode (with HTML rendering)
+- JSON editors for objects
+- Dynamic lists for arrays
+
+---
+
+### 📋 Phase 6: NPM Publishing & Automated Version Management
+**Status**: Planned
+**Priority**: High
 
 **Goals**:
 - Set up Changesets for semantic versioning
@@ -5220,14 +5384,14 @@ This section consolidates all development phases for the Documentor project. Com
 - Document release process for contributors
 
 **Sub-tasks**:
-- 5.1: Changesets Setup
-- 5.2: GitHub Actions - CI Workflow
-- 5.3: GitHub Actions - Release Workflow
-- 5.4: NPM Configuration
-- 5.5: GitHub Repository Setup
-- 5.6: Documentation & Contributing Guide
-- 5.7: Pre-Release Testing
-- 5.8: First Release (v1.0.0)
+- 6.1: Changesets Setup
+- 6.2: GitHub Actions - CI Workflow
+- 6.3: GitHub Actions - Release Workflow
+- 6.4: NPM Configuration
+- 6.5: GitHub Repository Setup
+- 6.6: Documentation & Contributing Guide
+- 6.7: Pre-Release Testing
+- 6.8: First Release (v1.0.0)
 
 **Deliverables**:
 - `.changeset/config.json`
@@ -5238,7 +5402,7 @@ This section consolidates all development phases for the Documentor project. Com
 
 ---
 
-### 📋 Phase 6: Dynamic Theming & Token Management
+### 📋 Phase 7: Dynamic Theming & Token Management
 **Status**: Planned
 **Priority**: Medium
 
@@ -5258,7 +5422,7 @@ This section consolidates all development phases for the Documentor project. Com
 
 ---
 
-### 📋 Phase 7: Interactive Props Playground
+### 📋 Phase 8: Interactive Props Playground
 **Status**: Planned
 **Priority**: Medium
 
@@ -5277,7 +5441,7 @@ This section consolidates all development phases for the Documentor project. Com
 
 ---
 
-### 📋 Phase 8: Enhanced Automation & Intelligence
+### 📋 Phase 9: Enhanced Automation & Intelligence
 **Status**: Planned
 **Priority**: Low
 
@@ -5297,7 +5461,7 @@ This section consolidates all development phases for the Documentor project. Com
 
 ---
 
-### 📋 Phase 9: Testing & Quality Assurance
+### 📋 Phase 10: Testing & Quality Assurance
 **Status**: Planned
 **Priority**: Medium
 
@@ -5316,7 +5480,7 @@ This section consolidates all development phases for the Documentor project. Com
 
 ---
 
-### 📋 Phase 10: Advanced Features
+### 📋 Phase 11: Advanced Features
 **Status**: Planned
 **Priority**: Low (future consideration)
 

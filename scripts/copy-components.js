@@ -84,11 +84,31 @@ async function generateComponentIndex(componentFiles) {
       const fileName = parts[parts.length - 1];
       const componentName = fileName.replace(/\.(tsx|jsx)$/, '');
       const relativePath = './' + file.replace(/\.(tsx|jsx)$/, '');
-      return { name: componentName, path: relativePath };
+
+      // Read the file to detect export type
+      const filePath = path.join(TARGET_DIR, file);
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+
+      // Check if it uses named export (export const ComponentName) or default export
+      const hasNamedExport = fileContent.includes(`export const ${componentName}`) ||
+                             fileContent.includes(`export function ${componentName}`);
+      const hasDefaultExport = fileContent.includes('export default');
+
+      return {
+        name: componentName,
+        path: relativePath,
+        isNamed: hasNamedExport && !hasDefaultExport
+      };
     });
 
   const imports = components
-    .map(({ name, path }) => `import ${name} from '${path}';`)
+    .map(({ name, path, isNamed }) => {
+      if (isNamed) {
+        return `import { ${name} } from '${path}';`;
+      } else {
+        return `import ${name} from '${path}';`;
+      }
+    })
     .join('\n');
 
   const exports = components
@@ -110,6 +130,16 @@ ${components.map(({ name }) => `  '${name}': ${name},`).join('\n')}
 
   fs.writeFileSync(indexPath, content, 'utf-8');
   console.log(`\n  ✓ Generated index.ts with ${components.length} components`);
+
+  // Log export types for debugging
+  const namedExports = components.filter(c => c.isNamed).map(c => c.name);
+  const defaultExports = components.filter(c => !c.isNamed).map(c => c.name);
+  if (namedExports.length > 0) {
+    console.log(`  ℹ Named exports: ${namedExports.join(', ')}`);
+  }
+  if (defaultExports.length > 0) {
+    console.log(`  ℹ Default exports: ${defaultExports.join(', ')}`);
+  }
 }
 
 // Run the script

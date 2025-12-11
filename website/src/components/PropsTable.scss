@@ -104,6 +104,51 @@
       color: var(--text-tertiary, #9ca3af);
     }
   }
+
+  .prop-value {
+    min-width: 180px;
+
+    .value-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #d1d5da;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      background: white;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #0066cc;
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+      }
+
+      &--checkbox {
+        width: auto;
+        height: 1.125rem;
+        cursor: pointer;
+        accent-color: #0066cc;
+      }
+
+      &--select {
+        cursor: pointer;
+      }
+
+      &--textarea {
+        resize: vertical;
+        min-height: 60px;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.8125rem;
+      }
+
+      &--number,
+      &--text {
+        max-width: 100%;
+      }
+    }
+  }
 }
 
 .no-props {

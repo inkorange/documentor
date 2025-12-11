@@ -1,13 +1,103 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { PropMetadata } from '../types/metadata';
 import './PropsTable.scss';
 
 interface PropsTableProps {
   props: Record<string, PropMetadata>;
+  currentValues?: Record<string, any>;
+  onValueChange?: (propName: string, value: any) => void;
+  editable?: boolean;
 }
 
-const PropsTable: React.FC<PropsTableProps> = ({ props }) => {
+const PropsTable: React.FC<PropsTableProps> = ({
+  props,
+  currentValues = {},
+  onValueChange,
+  editable = false
+}) => {
   const visibleProps = Object.entries(props).filter(([_, meta]) => !meta.hideInDocs);
+
+  const handleValueChange = useCallback((propName: string, value: any) => {
+    if (onValueChange) {
+      onValueChange(propName, value);
+    }
+  }, [onValueChange]);
+
+  const renderValueInput = (propName: string, metadata: PropMetadata) => {
+    if (!editable || !onValueChange) {
+      return null;
+    }
+
+    const currentValue = currentValues[propName];
+    const type = metadata.type.toLowerCase();
+
+    // Boolean input
+    if (type.includes('boolean')) {
+      return (
+        <input
+          type="checkbox"
+          checked={currentValue ?? false}
+          onChange={(e) => handleValueChange(propName, e.target.checked)}
+          className="value-input value-input--checkbox"
+        />
+      );
+    }
+
+    // Enum/Union type
+    if (metadata.values && metadata.values.length > 0) {
+      return (
+        <select
+          value={currentValue ?? ''}
+          onChange={(e) => handleValueChange(propName, e.target.value)}
+          className="value-input value-input--select"
+        >
+          {metadata.optional && <option value="">-- None --</option>}
+          {metadata.values.map((value) => (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    // Number input
+    if (type.includes('number')) {
+      return (
+        <input
+          type="number"
+          value={currentValue ?? ''}
+          onChange={(e) => handleValueChange(propName, e.target.valueAsNumber)}
+          className="value-input value-input--number"
+          placeholder="Enter number"
+        />
+      );
+    }
+
+    // React.ReactNode (textarea for HTML/JSX)
+    if (type.includes('reactnode') || type.includes('react.reactnode')) {
+      return (
+        <textarea
+          value={currentValue ?? ''}
+          onChange={(e) => handleValueChange(propName, e.target.value)}
+          className="value-input value-input--textarea"
+          rows={2}
+          placeholder="Enter HTML/JSX"
+        />
+      );
+    }
+
+    // String input (default)
+    return (
+      <input
+        type="text"
+        value={currentValue ?? ''}
+        onChange={(e) => handleValueChange(propName, e.target.value)}
+        className="value-input value-input--text"
+        placeholder={metadata.exampleValue || `Enter ${propName}`}
+      />
+    );
+  };
 
   if (visibleProps.length === 0) {
     return <p className="no-props">This component has no configurable props.</p>;
@@ -22,6 +112,7 @@ const PropsTable: React.FC<PropsTableProps> = ({ props }) => {
             <th>Type</th>
             <th>Default</th>
             <th>Description</th>
+            {editable && <th>Value</th>}
           </tr>
         </thead>
         <tbody>
@@ -53,6 +144,11 @@ const PropsTable: React.FC<PropsTableProps> = ({ props }) => {
               <td className="prop-description">
                 {metadata.description || <span className="no-description">No description</span>}
               </td>
+              {editable && (
+                <td className="prop-value">
+                  {renderValueInput(propName, metadata)}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

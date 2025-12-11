@@ -17,7 +17,11 @@
       "Bash(npm run build:template:*)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "Bash(npm run docs:serve:*)"
+      "Bash(npm run docs:serve:*)",
+      "Bash(npm run copy-components:*)",
+      "Bash(npx tsc:*)",
+      "Bash(curl:*)",
+      "Bash(timeout 10 npm run docs:serve)"
     ]
   }
 }

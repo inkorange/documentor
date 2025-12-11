@@ -80,8 +80,8 @@ const ThemeSwitcher: React.FC = () => {
 
     const cssVariables = rootMatch[1].trim();
 
-    // Create new scoped styles that apply ONLY to .preview-content
-    const scopedCSS = `.preview-content { ${cssVariables} }`;
+    // Create new scoped styles that apply to both .preview-content and .live-preview-content
+    const scopedCSS = `.preview-content, .live-preview-content { ${cssVariables} }`;
 
     const styleElement = document.createElement('style');
     styleElement.id = 'scoped-theme-styles';

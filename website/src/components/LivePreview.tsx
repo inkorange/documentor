@@ -22,6 +22,24 @@ const LivePreview: React.FC<LivePreviewProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [Component, setComponent] = useState<React.ComponentType<any> | null>(null);
 
+  // Process props to convert HTML strings to React elements
+  // Must be called before any conditional returns (Rules of Hooks)
+  const processedProps = React.useMemo(() => {
+    const processed: Record<string, any> = {};
+
+    for (const [key, value] of Object.entries(props)) {
+      // Check if the value is an HTML/JSX string (starts with < and ends with >)
+      if (typeof value === 'string' && value.trim().startsWith('<') && value.trim().endsWith('>')) {
+        // Use dangerouslySetInnerHTML pattern by creating a div wrapper
+        processed[key] = <div dangerouslySetInnerHTML={{ __html: value }} />;
+      } else {
+        processed[key] = value;
+      }
+    }
+
+    return processed;
+  }, [props]);
+
   useEffect(() => {
     setError(null);
 
@@ -74,7 +92,7 @@ const LivePreview: React.FC<LivePreviewProps> = ({
     return (
       <div className="live-preview-wrapper">
         <div className="live-preview-content">
-          <Component {...props} />
+          <Component {...processedProps} />
         </div>
       </div>
     );

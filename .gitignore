@@ -11,6 +11,10 @@
 # production
 /build
 /website/build
+/dist
+
+# TypeScript build info
+*.tsbuildinfo
 
 # documentation site node_modules
 /website/node_modules
