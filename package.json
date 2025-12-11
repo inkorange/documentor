@@ -2,7 +2,13 @@
   "name": "documentor",
   "version": "0.1.0",
   "description": "Automatic documentation generator for React components with live previews and variant showcases",
-  "keywords": ["documentation", "react", "components", "storybook", "design-system"],
+  "keywords": [
+    "documentation",
+    "react",
+    "components",
+    "storybook",
+    "design-system"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/yourusername/documentor"
@@ -72,6 +78,7 @@
     ]
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
