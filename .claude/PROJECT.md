@@ -834,52 +834,19 @@ const Button: React.FC<ButtonProps> = ({
 }
 ```
 
-## Roadmap
+## Development Roadmap
 
 **Note**: All parser and generator development should use the reference components in [`/src/components`](../src/components/) as test cases. The Button component serves as the primary reference implementation.
 
-### Phase 1: MVP (Current)
-- ✅ Basic component parsing
-- ✅ Props table generation
-- ✅ Simple variant rendering
-- ✅ CSS variable extraction
-- ✅ Reference Button component created at `/src/components/Button.tsx`
-- [ ] CLI tool implementation
-- [ ] Parser engine that can read `/src/components/Button.tsx`
-- [ ] Style parser that can extract CSS variables from `/src/components/Button.module.scss`
-- [ ] Basic React documentation website
-- [ ] Dev server with file watching
+**For the complete, consolidated development roadmap with all phases, see the [Development Roadmap](#development-roadmap) section at the bottom of this document.**
 
-### Phase 2: Enhanced Automation
-- [ ] Advanced variant generation with permutations
-- [ ] Intelligent default value inference
-- [ ] Support for compound components
-- [ ] Component composition detection
-- [ ] Enhanced JSDoc tag support
-- [ ] Search functionality
-- [ ] **Test coverage integration and reporting**
-- [ ] **Coverage badge generation**
+---
 
-### Phase 3: Developer Experience & CI/CD
-- [ ] Live component playground
-- [ ] CSS variable editor with real-time preview
-- [ ] Code snippet copy with syntax highlighting
-- [ ] Accessibility testing integration
-- [ ] Visual regression testing
-- [ ] **Static HTML export and build optimization**
-- [ ] **GitHub Actions integration**
-- [ ] **CI/CD pipeline templates**
-- [ ] **Automated deployment to hosting platforms**
+## Feature Details
 
-### Phase 4: Advanced Features
-- [ ] Multi-project support (monorepos)
-- [ ] Version history and changelog generation
-- [ ] Component usage analytics
-- [ ] AI-powered documentation suggestions
-- [ ] Figma integration for design tokens
-- [ ] Custom documentation pages (MDX support)
+The following sections provide detailed specifications for planned features. For phase status and priorities, refer to the consolidated roadmap at the end of this document.
 
-### Phase 5: Dynamic Theming & Token Management
+### Dynamic Theming & Token Management (Phase 6)
 
 **Objective**: Enable real-time design token manipulation and theme switching in the documentation website, allowing users to experiment with different token values and swap complete theme files to preview how components respond to different design systems.
 
@@ -1389,7 +1356,7 @@ SaaS companies can:
 - [ ] CLI commands for theme management
 - [ ] Updated README with theming guide
 
-### Phase 6: Interactive Props Playground
+### Interactive Props Playground (Phase 7)
 
 **Objective**: Enable real-time prop manipulation directly in the documentation website, allowing users to interactively change component prop values and see live updates in the preview. This creates an interactive playground experience where developers can experiment with different prop combinations without writing code.
 
@@ -4538,6 +4505,877 @@ Result: "PRIMARY BUTTON"
 
 ---
 
-**Date**: December 10, 2024  
-**Phase**: 3.4 - Enhanced JSDoc Directives and Display Templates  
+**Date**: December 10, 2024
+**Phase**: 3.4 - Enhanced JSDoc Directives and Display Templates
 **Status**: Complete
+
+---
+
+### Phase 4: Static Site Generation Architecture
+
+**Goal**: Restructure the build system to package a pre-built website template in the npm distribution, eliminating the need for users to have React/webpack installed.
+
+**Status**: ✅ Complete
+
+#### Overview
+
+This phase fundamentally changed how Documentor generates documentation sites. Instead of requiring users to have the React build toolchain, the documentation website is now pre-built and bundled with the npm package. During the build process, the tool simply copies the template and injects component metadata.
+
+#### Key Changes
+
+**Before Phase 4:**
+- Users needed React, webpack, and build dependencies installed
+- Website source code had to exist in user's project
+- Build process compiled React app from source each time
+- Complex dependency management for end users
+
+**After Phase 4:**
+- Website is pre-built during `npm publish`
+- Bundled as static assets in the npm package
+- Users only need Node.js installed
+- `npx documentor build` works immediately without setup
+
+#### 4.1: Template Build System
+
+**Created**: [scripts/build-template.js](../scripts/build-template.js)
+
+**Purpose**: Build the React documentation website into a distributable template
+
+**Process**:
+1. Copy example components to website
+2. Build React app using react-scripts
+3. Move build output to `/template` directory
+4. Clean up temporary files
+
+**Integration**: Runs automatically during `npm publish` via `prepublishOnly` hook
+
+#### 4.2: Template Copier Utility
+
+**Created**: [cli/utils/template-copier.ts](../cli/utils/template-copier.ts)
+
+**Purpose**: Copy pre-built template to user's output directory during build
+
+**Features**:
+- Detects template location (development vs production)
+- Recursively copies all template files
+- Skips metadata directory (generated separately)
+- Verbose logging support
+
+**Smart Detection**:
+```typescript
+// Development: ./template
+// Production: node_modules/documentor/template
+const templateDir = findTemplateDirectory();
+```
+
+#### 4.3: Build Command Integration
+
+**Updated**: [cli/commands/build.ts](../cli/commands/build.ts)
+
+**Changes**:
+- Added template copying step after metadata generation
+- Integrated error handling for missing template
+- Added logging for template copy progress
+
+**Build Flow**:
+1. Validate configuration
+2. Parse components and generate metadata
+3. Copy pre-built template to output directory
+4. Inject metadata into template
+5. Complete - ready to deploy
+
+#### 4.4: Package Configuration
+
+**Updated**: [package.json](../package.json)
+
+**Key Changes**:
+```json
+{
+  "files": [
+    "template/"  // Include pre-built template in npm package
+  ],
+  "scripts": {
+    "build:template": "node ./scripts/build-template.js",
+    "prepublishOnly": "npm run build:template"
+  }
+}
+```
+
+**Result**: Template automatically built before publishing to npm
+
+#### 4.5: Git Configuration
+
+**Updated**: [.gitignore](../.gitignore)
+
+**Added Exclusions**:
+```
+# built template for npm distribution
+/template
+
+# generated documentation output
+/docs
+```
+
+**Rationale**:
+- `/template` is a build artifact, regenerated on publish
+- `/docs` is user-generated output, shouldn't be in source control
+
+#### Success Metrics
+
+**User Experience**:
+- ✅ Zero setup required - `npx documentor build` works immediately
+- ✅ No React/webpack dependencies needed
+- ✅ Faster builds (no compilation step)
+- ✅ Smaller package size for users
+
+**Developer Workflow**:
+- ✅ Template built automatically on publish
+- ✅ Development mode still uses local website
+- ✅ Clear separation between source and distribution
+
+**Technical Quality**:
+- ✅ Template bundled correctly in npm package
+- ✅ All assets included (JS, CSS, images)
+- ✅ Metadata injection works seamlessly
+- ✅ Backward compatible with existing configs
+
+#### Implementation Files
+
+**New Files**:
+- `scripts/build-template.js` - Template build automation
+- `cli/utils/template-copier.ts` - Template copy utility
+
+**Modified Files**:
+- `cli/commands/build.ts` - Integrated template copying
+- `package.json` - Added scripts and files array
+- `.gitignore` - Excluded build artifacts
+
+#### User Impact
+
+**Before**:
+```bash
+# Required setup
+npm install react react-dom react-scripts
+# Create website directory structure
+# Configure webpack/babel
+# Run build
+npx documentor build
+```
+
+**After**:
+```bash
+# Just works
+npx documentor@latest build
+```
+
+#### Future Enhancements (Phase 4.5+)
+
+1. **Multiple Template Themes**: Support different visual themes
+2. **Template Customization**: Allow users to override template styles
+3. **Plugin System**: Extensible template architecture
+4. **Template Versioning**: Support multiple template versions
+5. **CDN Integration**: Optional asset hosting on CDN
+
+---
+
+**Phase 4 Completion Checklist:**
+
+- ✅ `scripts/build-template.js` created
+- ✅ `cli/utils/template-copier.ts` created
+- ✅ Build command updated to copy template
+- ✅ Package.json configured with files array
+- ✅ prepublishOnly hook added
+- ✅ .gitignore updated
+- ✅ Template builds successfully
+- ✅ Template copies to output directory
+- ✅ Metadata injection works
+- ✅ Static site generation tested
+
+---
+
+**Date**: December 10, 2024
+**Phase**: 4 - Static Site Generation Architecture
+**Status**: ✅ Complete
+
+---
+
+### Phase 5: NPM Publishing & Automated Version Management
+
+**Goal**: Set up automated npm publishing workflow with version management, changelog generation, and GitHub Actions integration for seamless releases.
+
+**Status**: Planned
+
+#### Overview
+
+This phase establishes a professional release workflow using Changesets for semantic versioning and automated npm publishing. The system will:
+
+1. Use Changesets to manage version bumps and changelogs
+2. Create automated GitHub Actions workflows for CI/CD
+3. Generate version bump PRs automatically
+4. Publish to npm registry on merge to main
+5. Create GitHub releases with changelog notes
+
+#### 5.1: Changesets Setup
+
+**Goal**: Install and configure Changesets for version management
+
+**Tasks**:
+- [ ] Install `@changesets/cli` as dev dependency
+- [ ] Run `npx changeset init` to create `.changeset/` directory
+- [ ] Configure `.changeset/config.json` with project settings
+- [ ] Add npm scripts for changeset workflow
+- [ ] Document changeset workflow for contributors
+
+**Configuration**:
+
+`.changeset/config.json`:
+```json
+{
+  "$schema": "https://unpkg.com/@changesets/config@2.3.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
+```
+
+**Package.json Scripts**:
+```json
+{
+  "scripts": {
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "npm run build:template && changeset publish"
+  }
+}
+```
+
+**Workflow for Contributors**:
+1. Make code changes
+2. Run `npm run changeset` to create a changeset file
+3. Select version bump type (major/minor/patch)
+4. Describe the changes
+5. Commit changeset file with code changes
+6. Submit PR
+
+#### 5.2: GitHub Actions - CI Workflow
+
+**Goal**: Create automated testing and validation workflow
+
+**Tasks**:
+- [ ] Create `.github/workflows/ci.yml`
+- [ ] Run TypeScript type checking
+- [ ] Run tests (if applicable)
+- [ ] Validate configuration schema
+- [ ] Build template to ensure it compiles
+- [ ] Run on all PRs and commits to main
+
+**CI Workflow**:
+
+`.github/workflows/ci.yml`:
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm test -- --passWithNoTests
+
+      - name: Build template
+        run: npm run build:template
+
+      - name: Validate template exists
+        run: |
+          if [ ! -d "template" ]; then
+            echo "Template directory not found!"
+            exit 1
+          fi
+```
+
+#### 5.3: GitHub Actions - Release Workflow
+
+**Goal**: Automate version bump PRs and npm publishing
+
+**Tasks**:
+- [ ] Create `.github/workflows/release.yml`
+- [ ] Set up Changesets bot for automated version PRs
+- [ ] Configure npm authentication with NPM_TOKEN
+- [ ] Publish to npm on merge to main
+- [ ] Create GitHub releases with changelog
+- [ ] Add release tags
+
+**Release Workflow**:
+
+`.github/workflows/release.yml`:
+```yaml
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Build template
+        run: npm run build:template
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: npm run release
+          title: 'chore: version packages'
+          commit: 'chore: version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.changesets.outputs.published == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          release_name: Release v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          body: ${{ steps.changesets.outputs.changelog }}
+```
+
+#### 5.4: NPM Configuration
+
+**Goal**: Configure package.json for npm publishing
+
+**Tasks**:
+- [ ] Verify `name`, `version`, `description` in package.json
+- [ ] Add `author`, `license`, `repository` fields
+- [ ] Configure `files` array (already done)
+- [ ] Set up `.npmignore` if needed
+- [ ] Add keywords for npm search
+- [ ] Verify `prepublishOnly` script runs build:template
+- [ ] Test local publishing with `npm pack`
+
+**Package.json Updates**:
+```json
+{
+  "name": "documentor",
+  "version": "0.1.0",
+  "description": "Automatic documentation generator for React components with live previews and variant showcases",
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "keywords": [
+    "documentation",
+    "react",
+    "components",
+    "storybook",
+    "design-system",
+    "typescript",
+    "jsdoc",
+    "static-site"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/documentor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/documentor/issues"
+  },
+  "homepage": "https://github.com/yourusername/documentor#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
+```
+
+#### 5.5: GitHub Repository Setup
+
+**Goal**: Configure GitHub repository secrets and settings
+
+**Tasks**:
+- [ ] Create NPM_TOKEN in npm.js (Automation tokens)
+- [ ] Add NPM_TOKEN to GitHub repository secrets
+- [ ] Enable "Allow GitHub Actions to create and approve pull requests" in Settings
+- [ ] Set up branch protection rules for main
+- [ ] Configure required status checks (CI must pass)
+- [ ] Add CODEOWNERS file if needed
+
+**NPM Token Setup**:
+1. Log in to npmjs.com
+2. Go to Access Tokens → Generate New Token
+3. Select "Automation" token type
+4. Copy token
+5. In GitHub: Settings → Secrets and variables → Actions
+6. Create new secret: `NPM_TOKEN` = your token
+
+**Branch Protection** (Settings → Branches → Add rule):
+- Branch name pattern: `main`
+- Require status checks to pass: ✅
+  - Required checks: `test` (from CI workflow)
+- Require pull request reviews: ✅ (optional)
+- Require linear history: ✅ (optional)
+
+#### 5.6: Documentation & Contributing Guide
+
+**Goal**: Document the release process for maintainers and contributors
+
+**Tasks**:
+- [ ] Create `CONTRIBUTING.md` with changeset workflow
+- [ ] Add release process to README or docs
+- [ ] Document how to create changesets
+- [ ] Explain semantic versioning strategy
+- [ ] Add examples of changelog entries
+
+**CONTRIBUTING.md** (excerpt):
+
+```markdown
+## Making Changes
+
+1. Fork and clone the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make your changes
+4. Create a changeset: `npm run changeset`
+   - Select the version bump type (patch/minor/major)
+   - Write a clear description of the changes
+5. Commit your changes and the changeset file
+6. Push and create a pull request
+
+## Versioning
+
+We use [Changesets](https://github.com/changesets/changesets) for version management:
+
+- **Patch** (0.0.X): Bug fixes, minor changes
+- **Minor** (0.X.0): New features, backwards compatible
+- **Major** (X.0.0): Breaking changes
+
+## Release Process (Maintainers)
+
+1. Merge PRs with changesets to `main`
+2. Changesets bot creates a "Version Packages" PR
+3. Review the version bumps and changelog
+4. Merge the PR to trigger npm publish
+5. GitHub release is created automatically
+```
+
+#### 5.7: Pre-Release Testing
+
+**Goal**: Validate the publishing workflow before going live
+
+**Tasks**:
+- [ ] Test `npm pack` locally to verify package contents
+- [ ] Install packed tarball in a test project
+- [ ] Verify `npx documentor build` works from installed package
+- [ ] Test template files are included correctly
+- [ ] Verify all CLI commands work
+- [ ] Check that binary is executable
+- [ ] Test on different Node versions (16, 18, 20)
+
+**Testing Commands**:
+```bash
+# Pack the package locally
+npm pack
+
+# Install in test project
+cd /path/to/test-project
+npm install /path/to/documentor-0.1.0.tgz
+
+# Test CLI
+npx documentor build
+npx documentor serve
+
+# Verify template exists
+ls node_modules/documentor/template/
+```
+
+#### 5.8: First Release
+
+**Goal**: Successfully publish v1.0.0 to npm
+
+**Tasks**:
+- [ ] Ensure all Phase 4 features are complete and tested
+- [ ] Create comprehensive changeset for v1.0.0
+- [ ] Update README with accurate installation instructions
+- [ ] Verify all GitHub Actions workflows are working
+- [ ] Merge version bump PR
+- [ ] Monitor npm publish workflow
+- [ ] Verify package on npmjs.com
+- [ ] Test installation: `npx documentor@latest build`
+- [ ] Announce release
+
+**Release Checklist**:
+- ✅ All tests passing
+- ✅ Template builds successfully
+- ✅ CI/CD workflows green
+- ✅ README is accurate and complete
+- ✅ LICENSE file exists
+- ✅ CONTRIBUTING.md is complete
+- ✅ npm credentials configured
+- ✅ Version bump PR created
+- ✅ Changelog reviewed
+
+#### Success Metrics
+
+**Automated Workflow**:
+- Version bump PRs created automatically on changeset commits
+- Successful npm publish on PR merge
+- GitHub releases created with changelogs
+- Zero manual intervention needed for releases
+
+**Developer Experience**:
+- Clear contributing guidelines
+- Simple changeset creation process
+- Fast CI/CD feedback (<5 minutes)
+- Reliable automated publishing
+
+**Package Quality**:
+- Package installs correctly via npm
+- All CLI commands work after installation
+- Template files bundled properly
+- Compatible with Node 16+
+
+#### Dependencies
+
+- Changesets CLI (@changesets/cli)
+- GitHub Actions (built-in)
+- NPM registry account
+- GitHub repository with Actions enabled
+
+#### Future Enhancements (Phase 5.5+)
+
+1. **Pre-release channels**: Support alpha/beta releases
+2. **Automated dependency updates**: Dependabot integration
+3. **Release notes generation**: Enhanced changelog formatting
+4. **Package size monitoring**: Track bundle size over time
+5. **Automated security scanning**: npm audit in CI/CD
+6. **Multi-registry publishing**: Support private registries
+
+---
+
+**Phase 5 Completion Checklist:**
+
+- [ ] Changesets installed and configured
+- [ ] `.changeset/config.json` created
+- [ ] CI workflow (`.github/workflows/ci.yml`) created
+- [ ] Release workflow (`.github/workflows/release.yml`) created
+- [ ] NPM_TOKEN added to GitHub secrets
+- [ ] Branch protection rules configured
+- [ ] CONTRIBUTING.md created with changeset workflow
+- [ ] Pre-release testing completed
+- [ ] First successful publish to npm
+- [ ] Package verified on npmjs.com
+- [ ] Installation tested with `npx documentor@latest`
+
+---
+
+**Date**: December 10, 2024
+**Phase**: 5 - NPM Publishing & Automated Version Management
+**Status**: Planned
+
+---
+
+# Development Roadmap
+
+This section consolidates all development phases for the Documentor project. Completed phases are marked with ✅, and remaining phases are organized by priority.
+
+## Completed Phases
+
+### ✅ Phase 3.2: Theme Token File System
+**Status**: Complete
+**Date**: December 10, 2024
+
+**Delivered**:
+- Multi-theme support via file paths in configuration
+- Theme background color specification
+- Theme switching in documentation website
+- CSS variable extraction from theme files
+- Integration with website theme selector
+
+**Key Files**:
+- Updated config schema to support theme objects
+- Enhanced CSS parser for theme token extraction
+- Website theme switcher component
+
+---
+
+### ✅ Phase 3.3: Configuration Schema Validation with Zod
+**Status**: Complete
+**Date**: December 10, 2024
+
+**Delivered**:
+- Comprehensive Zod schemas for all configuration sections
+- Runtime validation with helpful error messages
+- Support for both legacy and new config formats
+- Validation on config load before build execution
+- Custom error formatter for user-friendly messages
+
+**Key Files**:
+- `config/validation.ts` - Zod schemas and validation
+- `cli/utils/config-loader.ts` - Integrated validation
+
+---
+
+### ✅ Phase 3.4: Enhanced JSDoc Directives and Display Templates
+**Status**: Complete
+**Date**: December 10, 2024
+
+**Delivered**:
+- `@displayTemplate` JSDoc tag support
+- Multi-placeholder template replacement (`{size} {variant} Button`)
+- Automatic variant title generation from templates
+- Parser extraction of custom JSDoc tags
+- Enhanced variant showcase with custom titles
+
+**Key Files**:
+- `parser/component-parser.ts` - JSDoc tag extraction
+- `generator/variant-generator.ts` - Template processing
+- `website/src/components/VariantShowcase.tsx` - Display implementation
+
+---
+
+### ✅ Phase 4: Static Site Generation Architecture
+**Status**: Complete
+**Date**: December 10, 2024
+
+**Delivered**:
+- Pre-built React website template bundled in npm package
+- Template build automation (`build:template` script)
+- Template copier utility for production builds
+- Elimination of React/webpack dependency for end users
+- `prepublishOnly` hook for automatic template building
+
+**Key Files**:
+- `scripts/build-template.js` - Template build automation
+- `cli/utils/template-copier.ts` - Template copy utility
+- Updated `package.json` with files array and scripts
+- Updated `.gitignore` to exclude build artifacts
+
+**Impact**: Users can now run `npx documentor build` with zero setup
+
+---
+
+## Planned Phases
+
+### 📋 Phase 5: NPM Publishing & Automated Version Management
+**Status**: Planned
+**Priority**: High (next phase)
+
+**Goals**:
+- Set up Changesets for semantic versioning
+- Create GitHub Actions CI workflow (testing, type checking)
+- Create GitHub Actions release workflow (automated publishing)
+- Configure npm package publishing
+- Document release process for contributors
+
+**Sub-tasks**:
+- 5.1: Changesets Setup
+- 5.2: GitHub Actions - CI Workflow
+- 5.3: GitHub Actions - Release Workflow
+- 5.4: NPM Configuration
+- 5.5: GitHub Repository Setup
+- 5.6: Documentation & Contributing Guide
+- 5.7: Pre-Release Testing
+- 5.8: First Release (v1.0.0)
+
+**Deliverables**:
+- `.changeset/config.json`
+- `.github/workflows/ci.yml`
+- `.github/workflows/release.yml`
+- `CONTRIBUTING.md`
+- First successful npm publish
+
+---
+
+### 📋 Phase 6: Dynamic Theming & Token Management
+**Status**: Planned
+**Priority**: Medium
+
+**Goals**:
+- Real-time CSS variable editor in documentation website
+- Live theme token manipulation
+- Theme file swapping
+- Export modified themes
+- Token comparison between themes
+
+**Features**:
+- Interactive token editor with color pickers
+- Live preview of token changes on components
+- Theme import/export functionality
+- Token diff viewer
+- Reset to default values
+
+---
+
+### 📋 Phase 7: Interactive Props Playground
+**Status**: Planned
+**Priority**: Medium
+
+**Goals**:
+- Live component prop editor
+- Interactive code playground
+- Real-time prop manipulation
+- Code generation from playground state
+
+**Features**:
+- Props control panel (text inputs, selects, toggles)
+- Live component preview
+- Generated code snippet
+- Shareable playground URLs
+- Sandbox iframe for isolated rendering
+
+---
+
+### 📋 Phase 8: Enhanced Automation & Intelligence
+**Status**: Planned
+**Priority**: Low
+
+**Goals**:
+- Advanced variant generation with permutations
+- Intelligent default value inference
+- Compound component support
+- Component composition detection
+- Enhanced JSDoc tag support
+
+**Features**:
+- Smart variant permutation limits
+- Type-based default value generation
+- Nested component documentation
+- Composition pattern detection
+- Extended JSDoc vocabulary
+
+---
+
+### 📋 Phase 9: Testing & Quality Assurance
+**Status**: Planned
+**Priority**: Medium
+
+**Goals**:
+- Test coverage integration
+- Coverage badge generation
+- Visual regression testing
+- Accessibility testing integration
+
+**Features**:
+- Jest/Vitest coverage reporting
+- Component coverage metrics
+- Percy/Chromatic integration
+- axe-core accessibility checks
+- Coverage thresholds and gates
+
+---
+
+### 📋 Phase 10: Advanced Features
+**Status**: Planned
+**Priority**: Low (future consideration)
+
+**Goals**:
+- Multi-project support (monorepos)
+- Version history and changelog
+- Component usage analytics
+- AI-powered documentation suggestions
+- Figma integration for design tokens
+- Custom documentation pages (MDX support)
+
+**Features**:
+- Workspace/monorepo detection
+- Multi-package documentation aggregation
+- Component version tracking
+- Usage analytics dashboard
+- OpenAI integration for doc generation
+- Figma API token extraction
+- MDX page support
+
+---
+
+## Phase Summary
+
+| Phase | Name | Status | Priority |
+|-------|------|--------|----------|
+| 3.2 | Theme Token File System | ✅ Complete | - |
+| 3.3 | Configuration Schema Validation | ✅ Complete | - |
+| 3.4 | Enhanced JSDoc Directives | ✅ Complete | - |
+| 4 | Static Site Generation Architecture | ✅ Complete | - |
+| 5 | NPM Publishing & Version Management | 📋 Planned | High |
+| 6 | Dynamic Theming & Token Management | 📋 Planned | Medium |
+| 7 | Interactive Props Playground | 📋 Planned | Medium |
+| 8 | Enhanced Automation & Intelligence | 📋 Planned | Low |
+| 9 | Testing & Quality Assurance | 📋 Planned | Medium |
+| 10 | Advanced Features | 📋 Planned | Low |
+
+---
+
+## Next Steps
+
+**Immediate** (Phase 5):
+1. Install and configure Changesets
+2. Create CI/CD workflows
+3. Set up npm publishing automation
+4. Document contributing process
+5. Publish v1.0.0 to npm
+
+**Short-term** (Phases 6-7):
+1. Build interactive theme editor
+2. Implement props playground
+3. Add shareable playground URLs
+
+**Long-term** (Phases 8-10):
+1. Advanced automation features
+2. Testing integrations
+3. Monorepo support
+4. AI-powered enhancements
+
+---
+
+**Last Updated**: December 10, 2024
