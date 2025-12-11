@@ -204,6 +204,11 @@ export class ComponentParser {
       }
     }
 
+    // Support @example as an alias for @exampleValue
+    if (tags.example && !tags.exampleValue) {
+      tags.exampleValue = tags.example;
+    }
+
     return tags;
   }
 

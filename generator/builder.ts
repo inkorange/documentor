@@ -172,7 +172,8 @@ export async function buildDocumentation(
 
       // Write component metadata to file
       const metadataFile = path.join(metadataDir, `${component.name}.json`);
-      fs.writeFileSync(metadataFile, JSON.stringify(documentation, null, 2));
+      const jsonContent = JSON.stringify(documentation, null, 2);
+      fs.writeFileSync(metadataFile, jsonContent);
 
       if (verbose) {
         console.log(`  💾 Saved metadata to ${metadataFile}`);

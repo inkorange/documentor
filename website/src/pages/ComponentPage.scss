@@ -82,3 +82,14 @@
     color: var(--text-color, #1f2937);
   }
 }
+
+.interactive-preview-container {
+  .live-preview-wrapper {
+    background: var(--theme-background, #f8f9fa);
+    border: 2px dashed var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    padding: 2rem;
+    min-height: 150px;
+    transition: background 0.3s ease;
+  }
+}

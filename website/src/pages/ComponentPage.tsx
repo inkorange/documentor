@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchComponentDoc } from '../utils/api';
 import { ComponentDocumentation } from '../types/metadata';
@@ -7,6 +7,7 @@ import VariantShowcase from '../components/VariantShowcase';
 import CSSVariablesTable from '../components/CSSVariablesTable';
 import CoverageBadge from '../components/CoverageBadge';
 import CoveragePanel from '../components/CoveragePanel';
+import LivePreview from '../components/LivePreview';
 import './ComponentPage.scss';
 
 const ComponentPage: React.FC = () => {
@@ -14,6 +15,7 @@ const ComponentPage: React.FC = () => {
   const [doc, setDoc] = useState<ComponentDocumentation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editedProps, setEditedProps] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (componentName) {
@@ -28,12 +30,23 @@ const ComponentPage: React.FC = () => {
     try {
       const data = await fetchComponentDoc(name);
       setDoc(data);
+
+      // Set initial prop values from the first variant
+      if (data.variants && data.variants.length > 0) {
+        setEditedProps(data.variants[0].props);
+      }
+
       setLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load component');
       setLoading(false);
     }
   };
+
+  // Handle individual prop changes from PropsTable
+  const handlePropChange = useCallback((propName: string, value: any) => {
+    setEditedProps(prev => ({ ...prev, [propName]: value }));
+  }, []);
 
   if (loading) {
     return (
@@ -88,8 +101,23 @@ const ComponentPage: React.FC = () => {
       </header>
 
       <section className="component-section">
+        <h2>Interactive Preview</h2>
+        <div className="interactive-preview-container">
+          <LivePreview
+            componentName={doc.component.name}
+            props={editedProps}
+          />
+        </div>
+      </section>
+
+      <section className="component-section">
         <h2>Properties</h2>
-        <PropsTable props={doc.component.props} />
+        <PropsTable
+          props={doc.component.props}
+          currentValues={editedProps}
+          onValueChange={handlePropChange}
+          editable={true}
+        />
       </section>
 
       <VariantShowcase componentName={doc.component.name} variants={doc.variants} />
