@@ -572,6 +572,6 @@ MIT © 2024
 
 ## Support
 
-- 📖 [Documentation](https://github.com/yourusername/documentor)
-- 🐛 [Report Issues](https://github.com/yourusername/documentor/issues)
-- 💬 [Discussions](https://github.com/yourusername/documentor/discussions)
+- 📖 [Documentation](https://github.com/inkorange/documentor)
+- 🐛 [Report Issues](https://github.com/inkorange/documentor/issues)
+- 💬 [Discussions](https://github.com/inkorange/documentor/discussions)
