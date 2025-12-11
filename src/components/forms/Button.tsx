@@ -4,8 +4,11 @@ import styles from './Button.module.scss';
 export type ButtonVariant = 'primary' | 'secondary' | 'outline';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  /* Controls the display variant of the button component */
-  /* renderVariants: true */
+  /**
+    * Controls the display variant of the button component
+    * @renderVariants true
+    * @displayTemplate {variant} Button
+   */
   variant?: ButtonVariant;
   /* content for the button text */
   children: React.ReactNode;

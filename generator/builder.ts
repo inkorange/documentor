@@ -1,6 +1,8 @@
 import { glob } from 'glob';
 import { ComponentParser } from '../parser/component-parser';
 import { StyleParser } from '../parser/style-parser';
+import { CoverageParser } from '../parser/coverage-parser';
+import { ThemeParser } from '../parser/theme-parser';
 import { VariantGenerator } from './variant-generator';
 import { DocumentorConfig } from '../config/schema';
 import * as fs from 'fs';
@@ -16,6 +18,7 @@ export interface ComponentDocumentation {
   component: any;
   variants: any[];
   cssVariables: any[];
+  coverage?: any;
 }
 
 export async function buildDocumentation(
@@ -24,6 +27,8 @@ export async function buildDocumentation(
 ): Promise<BuildResult> {
   const componentParser = new ComponentParser();
   const styleParser = new StyleParser();
+  const coverageParser = new CoverageParser();
+  const themeParser = new ThemeParser();
   const variantGenerator = new VariantGenerator(
     config.variants?.maxPermutations,
     config.variants?.defaultValues
@@ -35,6 +40,62 @@ export async function buildDocumentation(
   // Create metadata directory
   if (!fs.existsSync(metadataDir)) {
     fs.mkdirSync(metadataDir, { recursive: true });
+  }
+
+  // Parse and copy theme files
+  if (config.theme?.tokens && Array.isArray(config.theme.tokens)) {
+    const themeMap = themeParser.parseThemeConfig(config);
+    const themes: any[] = [];
+
+    if (themeMap.size > 0) {
+      if (verbose) console.log(`\n🎨 Loading ${themeMap.size} theme(s)...`);
+
+      const themesDir = path.join(outputDir, 'themes');
+      if (!fs.existsSync(themesDir)) {
+        fs.mkdirSync(themesDir, { recursive: true });
+      }
+
+      for (const [themeName, themeConfig] of themeMap.entries()) {
+        try {
+          const theme = await themeParser.parseThemeFile(themeConfig.source);
+          themes.push({
+            id: theme.id,
+            name: theme.name,
+            filePath: theme.filePath,
+            background: themeConfig.background,
+            tokenCount: theme.tokens.length,
+            metadata: theme.metadata
+          });
+
+          // Copy theme CSS file to output directory
+          const sourceFile = path.resolve(process.cwd(), theme.filePath);
+          const targetFile = path.join(themesDir, `${theme.id}.css`);
+          fs.copyFileSync(sourceFile, targetFile);
+
+          if (verbose) {
+            const bgInfo = themeConfig.background ? ` (bg: ${themeConfig.background})` : '';
+            console.log(`  ✓ Loaded "${theme.name}" theme with ${theme.tokens.length} tokens${bgInfo}`);
+          }
+        } catch (error) {
+          if (verbose) {
+            console.error(`  ✗ Failed to load ${themeName} theme from ${themeConfig.source}:`, error);
+          }
+        }
+      }
+
+      // Generate theme index JSON
+      const themeIndex = {
+        themes,
+        defaultTheme: themes[0]?.id || 'light'
+      };
+
+      const themesOutputPath = path.join(metadataDir, 'themes.json');
+      fs.writeFileSync(themesOutputPath, JSON.stringify(themeIndex, null, 2));
+
+      if (verbose) {
+        console.log(`  💾 Saved theme index to ${themesOutputPath}`);
+      }
+    }
   }
 
   let componentCount = 0;
@@ -88,10 +149,23 @@ export async function buildDocumentation(
         console.log(`  ✨ Generated ${variants.length} variants`);
       }
 
+      // Extract coverage data
+      const coverage = coverageParser.extractComponentCoverage(file);
+      if (coverage && verbose) {
+        const avgCoverage = (
+          coverage.metrics.statements.percentage +
+          coverage.metrics.branches.percentage +
+          coverage.metrics.functions.percentage +
+          coverage.metrics.lines.percentage
+        ) / 4;
+        console.log(`  📊 Coverage: ${avgCoverage.toFixed(1)}% (${coverage.hasTests ? 'has tests' : 'no tests'})`);
+      }
+
       const documentation: ComponentDocumentation = {
         component,
         variants,
         cssVariables,
+        coverage,
       };
 
       allComponents.push(documentation);

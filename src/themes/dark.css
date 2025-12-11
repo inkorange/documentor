@@ -1,0 +1,11 @@
+/**
+ * Dark Theme Design Tokens
+ * Dark mode optimized for reduced eye strain
+ */
+
+:root {
+    --primary-background-color: #ffffff;
+    --primary-background-hover-color: #f4f4f4;
+    --primary-background-active-color: #f4f4f4;
+    --primary-text-color: #0066cc;
+}

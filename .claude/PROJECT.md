@@ -2049,6 +2049,1452 @@ function decodePropsFromUrl(search: string): Record<string, any> {
 - [ ] Documentation for playground features
 - [ ] Updated README with playground guide
 
+### Phase 3.2: Theme Token File System
+
+**Objective**: Implement support for external theme token files (CSS/SCSS) that can be dynamically loaded and applied to the documentation site via a dropdown menu in the left navigation. This allows users to quickly swap between different global CSS/token files and see live component previews automatically update with the selected theme's design tokens.
+
+**Key Workflow**: The `tokens` array in the config defines a collection of theme files (e.g., light.css, dark.css). These appear as options in a dropdown menu in the left sidebar navigation. When a user selects a theme from the dropdown, that theme's CSS file is applied globally, and all live component previews on the documentation site instantly reflect the new token values. This enables rapid theme comparison and validation without any code changes or page reloads.
+
+#### Core Features
+
+##### 1. Theme File Discovery & Loading
+
+**Configuration Schema:**
+```json
+{
+  "theme": {
+    "tokens": [
+      {
+        "light": {
+          "source": "src/themes/light.css",
+          "background": "#FFFFFF"
+        },
+        "dark": {
+          "source": "src/themes/dark.css",
+          "background": "#1F2937"
+        }
+      }
+    ],
+    "defaultTheme": "light",
+    "primaryColor": "#0066cc"
+  }
+}
+```
+
+**Theme Configuration Structure:**
+The `tokens` array contains objects mapping theme names (like "light" and "dark") to theme configurations. Each theme configuration includes:
+- **`source`** (required): Path to the CSS/SCSS file containing CSS custom properties (CSS variables)
+- **`background`** (optional): Background color for component preview areas. This is applied via the `--theme-background` CSS variable to all live component previews, allowing you to showcase components against different backgrounds (e.g., white background for light theme, dark background for dark theme)
+
+**Backward Compatibility:** The system also supports the legacy format where theme names map directly to file paths (string values instead of objects). For example:
+```json
+{
+  "theme": {
+    "tokens": [{
+      "light": "src/themes/light.css",
+      "dark": "src/themes/dark.css"
+    }]
+  }
+}
+```
+
+**Example Theme File (`src/themes/light.css`):**
+```css
+/**
+ * Light Theme Design Tokens
+ * Default theme for component documentation
+ */
+
+:root {
+  /* Primary Colors */
+  --primary-color: #0066cc;
+  --primary-hover: #0052a3;
+  --primary-active: #003d7a;
+
+  /* Background Colors */
+  --background-primary: #ffffff;
+  --background-secondary: #f9fafb;
+  --background-tertiary: #f3f4f6;
+
+  /* Text Colors */
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+
+  /* Border Colors */
+  --border-color: #e5e7eb;
+  --border-focus: #0066cc;
+
+  /* Component-Specific Tokens */
+  --button-primary-bg: var(--primary-color);
+  --button-primary-text: #ffffff;
+  --input-background: #ffffff;
+  --input-border: #e5e7eb;
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Typography */
+  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-mono: 'Monaco', 'Courier New', monospace;
+  --font-size-base: 1rem;
+  --font-weight-normal: 400;
+  --font-weight-bold: 600;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* Border Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+```
+
+**Example Dark Theme (`src/themes/dark.css`):**
+```css
+/**
+ * Dark Theme Design Tokens
+ * Dark mode optimized for reduced eye strain
+ */
+
+:root {
+  /* Primary Colors */
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --primary-active: #1d4ed8;
+
+  /* Background Colors */
+  --background-primary: #1f2937;
+  --background-secondary: #111827;
+  --background-tertiary: #0f172a;
+
+  /* Text Colors */
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-tertiary: #9ca3af;
+
+  /* Border Colors */
+  --border-color: #374151;
+  --border-focus: #3b82f6;
+
+  /* Component-Specific Tokens */
+  --button-primary-bg: var(--primary-color);
+  --button-primary-text: #ffffff;
+  --input-background: #374151;
+  --input-border: #4b5563;
+
+  /* Shadows (adjusted for dark mode) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+}
+```
+
+##### 2. Theme Parser Implementation
+
+**Parser Module (`parser/theme-parser.ts`):**
+```typescript
+import * as fs from 'fs';
+import * as path from 'path';
+import postcss from 'postcss';
+
+export interface ThemeToken {
+  name: string;
+  value: string;
+  description?: string;
+}
+
+export interface Theme {
+  id: string;
+  name: string;
+  filePath: string;
+  tokens: ThemeToken[];
+  metadata?: {
+    description?: string;
+    author?: string;
+    version?: string;
+  };
+}
+
+export class ThemeParser {
+  /**
+   * Parse a theme configuration from documentor.config.json
+   */
+  parseThemeConfig(config: any): Map<string, string> {
+    const themeMap = new Map<string, string>();
+
+    if (!config.theme?.tokens || !Array.isArray(config.theme.tokens)) {
+      return themeMap;
+    }
+
+    // Extract theme files from configuration
+    for (const tokenGroup of config.theme.tokens) {
+      for (const [themeName, filePath] of Object.entries(tokenGroup)) {
+        if (typeof filePath === 'string') {
+          themeMap.set(themeName, filePath as string);
+        }
+      }
+    }
+
+    return themeMap;
+  }
+
+  /**
+   * Parse a CSS/SCSS theme file and extract tokens
+   */
+  async parseThemeFile(filePath: string): Promise<Theme> {
+    const absolutePath = path.resolve(process.cwd(), filePath);
+
+    if (!fs.existsSync(absolutePath)) {
+      throw new Error(`Theme file not found: ${filePath}`);
+    }
+
+    const content = fs.readFileSync(absolutePath, 'utf-8');
+    const tokens = await this.extractTokensFromCSS(content);
+    const metadata = this.extractMetadataFromComments(content);
+
+    return {
+      id: path.basename(filePath, path.extname(filePath)),
+      name: this.formatThemeName(path.basename(filePath, path.extname(filePath))),
+      filePath,
+      tokens,
+      metadata
+    };
+  }
+
+  /**
+   * Extract CSS custom properties using PostCSS
+   */
+  private async extractTokensFromCSS(cssContent: string): Promise<ThemeToken[]> {
+    const tokens: ThemeToken[] = [];
+
+    const root = postcss.parse(cssContent);
+
+    root.walkDecls(decl => {
+      if (decl.prop.startsWith('--')) {
+        // Check for inline comment describing the token
+        const description = this.extractInlineDescription(decl);
+
+        tokens.push({
+          name: decl.prop,
+          value: decl.value,
+          description
+        });
+      }
+    });
+
+    return tokens;
+  }
+
+  /**
+   * Extract theme metadata from leading comment block
+   */
+  private extractMetadataFromComments(content: string): Theme['metadata'] {
+    const metadata: Theme['metadata'] = {};
+
+    // Match the first comment block
+    const commentMatch = content.match(/\/\*\*([\s\S]*?)\*\//);
+    if (!commentMatch) return metadata;
+
+    const commentText = commentMatch[1];
+
+    // Extract description (first non-empty line after /**)
+    const descriptionMatch = commentText.match(/\*\s*(.+)/);
+    if (descriptionMatch) {
+      metadata.description = descriptionMatch[1].trim();
+    }
+
+    // Extract @author tag
+    const authorMatch = commentText.match(/@author\s+(.+)/);
+    if (authorMatch) {
+      metadata.author = authorMatch[1].trim();
+    }
+
+    // Extract @version tag
+    const versionMatch = commentText.match(/@version\s+(.+)/);
+    if (versionMatch) {
+      metadata.version = versionMatch[1].trim();
+    }
+
+    return metadata;
+  }
+
+  /**
+   * Extract inline comment for a CSS declaration
+   */
+  private extractInlineDescription(decl: any): string | undefined {
+    // Check if there's a comment before this declaration
+    const prev = decl.prev();
+    if (prev && prev.type === 'comment') {
+      return prev.text.trim();
+    }
+    return undefined;
+  }
+
+  /**
+   * Format theme name for display (e.g., "dark-mode" -> "Dark Mode")
+   */
+  private formatThemeName(id: string): string {
+    return id
+      .split(/[-_]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  /**
+   * Validate theme file has required tokens
+   */
+  validateTheme(theme: Theme, requiredTokens: string[]): { valid: boolean; missing: string[] } {
+    const tokenNames = new Set(theme.tokens.map(t => t.name));
+    const missing = requiredTokens.filter(token => !tokenNames.has(token));
+
+    return {
+      valid: missing.length === 0,
+      missing
+    };
+  }
+}
+```
+
+##### 3. Theme Integration in Build Process
+
+**Generator Updates (`generator/builder.ts`):**
+```typescript
+import { ThemeParser } from '../parser/theme-parser';
+
+export async function buildDocumentation(config: any, options: BuildOptions) {
+  const themeParser = new ThemeParser();
+
+  // Parse theme configuration
+  const themeMap = themeParser.parseThemeConfig(config);
+  const themes: Theme[] = [];
+
+  console.log(`🎨 Loading ${themeMap.size} theme(s)...`);
+
+  for (const [themeName, filePath] of themeMap.entries()) {
+    try {
+      const theme = await themeParser.parseThemeFile(filePath);
+      themes.push(theme);
+      console.log(`  ✓ Loaded "${theme.name}" theme with ${theme.tokens.length} tokens`);
+    } catch (error) {
+      console.error(`  ✗ Failed to load ${themeName} theme from ${filePath}:`, error);
+    }
+  }
+
+  // Generate theme index JSON
+  const themeIndex = {
+    themes: themes.map(t => ({
+      id: t.id,
+      name: t.name,
+      filePath: t.filePath,
+      tokenCount: t.tokens.length,
+      metadata: t.metadata
+    })),
+    defaultTheme: themes[0]?.id || 'light'
+  };
+
+  // Save theme index
+  const themesOutputPath = path.join(outputDir, 'metadata', 'themes.json');
+  fs.writeFileSync(themesOutputPath, JSON.stringify(themeIndex, null, 2));
+  console.log(`💾 Saved theme index to ${themesOutputPath}`);
+
+  // Copy theme CSS files to output directory
+  const themesDir = path.join(outputDir, 'themes');
+  fs.mkdirSync(themesDir, { recursive: true });
+
+  for (const theme of themes) {
+    const sourceFile = path.resolve(process.cwd(), theme.filePath);
+    const targetFile = path.join(themesDir, `${theme.id}.css`);
+    fs.copyFileSync(sourceFile, targetFile);
+    console.log(`  📄 Copied ${theme.id}.css to output`);
+  }
+}
+```
+
+##### 4. Theme Switcher UI Component
+
+**Location**: The ThemeSwitcher component is placed in the left sidebar navigation, above or below the component list, providing easy access to theme switching throughout the documentation browsing experience.
+
+**Behavior**: When a theme is selected from the dropdown:
+1. The previous theme's CSS file is removed from the document head
+2. The new theme's CSS file is injected as a `<link>` tag
+3. All CSS custom properties are automatically updated document-wide
+4. Live component previews instantly re-render with the new token values
+5. The user's theme preference is saved to localStorage for persistence across sessions
+
+**Component (`website/src/components/ThemeSwitcher.tsx`):**
+```typescript
+import React, { useState, useEffect } from 'react';
+import './ThemeSwitcher.scss';
+
+interface Theme {
+  id: string;
+  name: string;
+  filePath: string;
+  tokenCount: number;
+  metadata?: {
+    description?: string;
+  };
+}
+
+interface ThemeIndex {
+  themes: Theme[];
+  defaultTheme: string;
+}
+
+const ThemeSwitcher: React.FC = () => {
+  const [themes, setThemes] = useState<Theme[]>([]);
+  const [currentTheme, setCurrentTheme] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Load theme index
+    fetch('/metadata/themes.json')
+      .then(res => res.json())
+      .then((data: ThemeIndex) => {
+        setThemes(data.themes);
+
+        // Check localStorage for saved preference
+        const savedTheme = localStorage.getItem('documentor-theme') || data.defaultTheme;
+        setCurrentTheme(savedTheme);
+        applyTheme(savedTheme);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Failed to load themes:', error);
+        setLoading(false);
+      });
+  }, []);
+
+  const applyTheme = (themeId: string) => {
+    // Remove existing theme stylesheets
+    document.querySelectorAll('link[data-theme]').forEach(link => link.remove());
+
+    // Add new theme stylesheet
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `/themes/${themeId}.css`;
+    link.setAttribute('data-theme', themeId);
+    document.head.appendChild(link);
+
+    // Save preference
+    localStorage.setItem('documentor-theme', themeId);
+    document.documentElement.setAttribute('data-theme', themeId);
+  };
+
+  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newTheme = e.target.value;
+    setCurrentTheme(newTheme);
+    applyTheme(newTheme);
+  };
+
+  if (loading || themes.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="theme-switcher">
+      <label htmlFor="theme-select" className="theme-label">
+        🎨 Theme
+      </label>
+      <select
+        id="theme-select"
+        value={currentTheme}
+        onChange={handleThemeChange}
+        className="theme-select"
+      >
+        {themes.map(theme => (
+          <option key={theme.id} value={theme.id}>
+            {theme.name} ({theme.tokenCount} tokens)
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+export default ThemeSwitcher;
+```
+
+##### 5. Theme Switcher Styling
+
+**Styles (`website/src/components/ThemeSwitcher.scss`):**
+```scss
+.theme-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--background-secondary, #f9fafb);
+  border-radius: var(--radius-md, 0.375rem);
+
+  .theme-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary, #6b7280);
+    white-space: nowrap;
+  }
+
+  .theme-select {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: var(--radius-sm, 0.25rem);
+    background: var(--background-primary, #ffffff);
+    color: var(--text-primary, #1f2937);
+    cursor: pointer;
+    transition: all var(--transition-fast, 150ms ease);
+
+    &:hover {
+      border-color: var(--primary-color, #0066cc);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--border-focus, #0066cc);
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+  }
+}
+```
+
+##### 6. Integration Points
+
+**Website Sidebar Component (`website/src/components/Sidebar.tsx`):**
+```typescript
+import ThemeSwitcher from './ThemeSwitcher';
+
+function Sidebar() {
+  return (
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <h2>Documentation</h2>
+      </div>
+
+      {/* Theme switcher in sidebar navigation */}
+      <ThemeSwitcher />
+
+      {/* Component navigation list */}
+      <nav className="component-nav">
+        {/* ... component links ... */}
+      </nav>
+    </aside>
+  );
+}
+```
+
+**Impact on Live Previews:**
+When a user switches themes via the sidebar dropdown, all component previews across the documentation site automatically update. This includes:
+- Component variant showcases on individual component pages
+- Interactive playground previews
+- Code example renders
+- Any other live component instances
+
+The theme CSS variables are applied at the `:root` level, so they cascade to all components without requiring any component-specific logic.
+
+##### 7. CLI Theme Commands
+
+**New CLI Commands:**
+```bash
+# Validate theme files
+documentor validate-theme src/themes/light.css
+
+# List all themes in project
+documentor list-themes
+
+# Create a new theme template
+documentor create-theme --name "High Contrast" --output src/themes/high-contrast.css
+
+# Build with specific default theme
+documentor build --default-theme dark
+```
+
+**CLI Implementation (`cli/commands/theme.ts`):**
+```typescript
+import { ThemeParser } from '../../parser/theme-parser';
+
+export async function validateThemeCommand(filePath: string) {
+  const parser = new ThemeParser();
+
+  try {
+    const theme = await parser.parseThemeFile(filePath);
+    console.log(`✅ Theme "${theme.name}" is valid`);
+    console.log(`   Tokens: ${theme.tokens.length}`);
+    console.log(`   File: ${theme.filePath}`);
+
+    if (theme.metadata?.description) {
+      console.log(`   Description: ${theme.metadata.description}`);
+    }
+  } catch (error) {
+    console.error(`❌ Theme validation failed:`, error);
+    process.exit(1);
+  }
+}
+
+export async function listThemesCommand() {
+  const config = loadConfig();
+  const parser = new ThemeParser();
+  const themeMap = parser.parseThemeConfig(config);
+
+  console.log(`Found ${themeMap.size} theme(s):\n`);
+
+  for (const [themeName, filePath] of themeMap.entries()) {
+    try {
+      const theme = await parser.parseThemeFile(filePath);
+      console.log(`📄 ${theme.name}`);
+      console.log(`   ID: ${theme.id}`);
+      console.log(`   File: ${theme.filePath}`);
+      console.log(`   Tokens: ${theme.tokens.length}`);
+      if (theme.metadata?.description) {
+        console.log(`   Description: ${theme.metadata.description}`);
+      }
+      console.log();
+    } catch (error) {
+      console.error(`   ❌ Failed to parse: ${error.message}\n`);
+    }
+  }
+}
+
+export async function createThemeCommand(options: { name: string; output: string }) {
+  const template = `/**
+ * ${options.name} Theme
+ * Generated by Documentor
+ */
+
+:root {
+  /* Primary Colors */
+  --primary-color: #0066cc;
+  --primary-hover: #0052a3;
+  --primary-active: #003d7a;
+
+  /* Background Colors */
+  --background-primary: #ffffff;
+  --background-secondary: #f9fafb;
+  --background-tertiary: #f3f4f6;
+
+  /* Text Colors */
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+
+  /* Border Colors */
+  --border-color: #e5e7eb;
+  --border-focus: #0066cc;
+
+  /* Add your custom tokens here */
+}
+`;
+
+  fs.writeFileSync(options.output, template, 'utf-8');
+  console.log(`✅ Created theme template at ${options.output}`);
+}
+```
+
+#### Implementation Architecture
+
+##### Data Flow
+
+```
+1. Config Loading (Build Time)
+   └─> Read documentor.config.json
+   └─> Extract theme.tokens array
+   └─> Parse each theme file with ThemeParser
+   └─> Generate themes.json index
+   └─> Copy theme CSS files to output/themes/
+
+2. Theme Selection (Runtime)
+   └─> Load themes.json on app mount
+   └─> Check localStorage for saved theme preference
+   └─> Inject selected theme CSS into document head
+   └─> Update UI to reflect current theme
+
+3. Theme Switching (User Action)
+   └─> User selects theme from dropdown
+   └─> Remove previous theme stylesheet
+   └─> Inject new theme stylesheet
+   └─> Apply theme background color via --theme-background CSS variable
+   └─> Save preference to localStorage
+   └─> All components re-render with new tokens and background
+```
+
+##### File Structure
+
+```
+project/
+├── src/
+│   └── themes/
+│       ├── light.css          # Light theme tokens
+│       ├── dark.css           # Dark theme tokens
+│       └── high-contrast.css  # Accessibility theme
+├── docs/                      # Build output
+│   ├── metadata/
+│   │   └── themes.json        # Generated theme index
+│   └── themes/
+│       ├── light.css          # Copied theme files
+│       ├── dark.css
+│       └── high-contrast.css
+└── documentor.config.json     # Theme configuration
+```
+
+#### Configuration Schema
+
+```json
+{
+  "theme": {
+    "tokens": [
+      {
+        "light": {
+          "source": "src/themes/light.css",
+          "background": "#FFFFFF"
+        },
+        "dark": {
+          "source": "src/themes/dark.css",
+          "background": "#1F2937"
+        },
+        "high-contrast": {
+          "source": "src/themes/high-contrast.css",
+          "background": "#000000"
+        }
+      }
+    ],
+    "defaultTheme": "light",
+    "primaryColor": "#0066cc"
+  }
+}
+```
+
+**Configuration Options:**
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `tokens` | `Array<Object>` | Array of theme configurations. Each theme has a name mapped to an object with `source` (CSS file path) and optional `background` (preview background color) |
+| `tokens[].source` | `string` | Path to the CSS/SCSS file containing theme tokens (required) |
+| `tokens[].background` | `string` | Background color for component preview areas. Applied via `--theme-background` CSS variable (optional) |
+| `defaultTheme` | `string` | Theme ID to use by default (optional, defaults to first theme) |
+| `primaryColor` | `string` | Fallback primary color if no theme loaded |
+
+#### Benefits
+
+1. **Separation of Concerns**: Design tokens defined separately from component code
+2. **Multiple Theme Support**: Easy to maintain light/dark/branded themes
+3. **Designer-Friendly**: Non-technical users can edit CSS files
+4. **Version Control**: Theme files tracked in Git alongside components
+5. **Runtime Switching**: Users can switch themes without page reload
+6. **Persistent Preference**: Theme choice saved to localStorage
+7. **Build-Time Validation**: Errors caught during documentation build
+8. **Zero Runtime Cost**: Themes loaded as static CSS (no JavaScript processing)
+
+#### Use Cases
+
+**Use Case 1: Light/Dark Mode Support**
+- Provide both light.css and dark.css themes
+- Users toggle between modes in documentation
+- Components automatically adapt to theme tokens
+
+**Use Case 2: Brand Customization**
+- Create brand-specific theme files (e.g., acme-brand.css)
+- Clients preview components with their brand colors
+- Export branded documentation for customer delivery
+
+**Use Case 3: Accessibility Themes**
+- high-contrast.css for visually impaired users
+- large-text.css with increased font sizes
+- Users select accessibility theme from dropdown
+
+**Use Case 4: Design System Evolution**
+- old-tokens.css (v1 design system)
+- new-tokens.css (v2 design system)
+- Compare component appearance side-by-side
+- Validate migration before deploying
+
+#### Deliverables
+
+**Phase 3.2 Completion Checklist:**
+- [ ] ThemeParser class with CSS variable extraction
+- [ ] Config schema support for `theme.tokens` array
+- [ ] Theme file discovery and validation
+- [ ] Build process integration (copy theme files to output)
+- [ ] Generate themes.json index file
+- [ ] ThemeSwitcher UI component
+- [ ] localStorage persistence for theme preference
+- [ ] CLI command: `validate-theme`
+- [ ] CLI command: `list-themes`
+- [ ] CLI command: `create-theme`
+- [ ] Theme CSS injection in website App.tsx
+- [ ] Documentation for theme file format
+- [ ] Example theme files (light.css, dark.css)
+- [ ] Support for multiple theme objects in tokens array
+- [ ] Error handling for missing/invalid theme files
+- [ ] Hot reload support in dev mode for theme changes
+
+### Phase 3.3: Configuration Schema Validation with Zod
+
+**Objective**: Implement comprehensive validation for `documentor.config.json` using Zod to catch configuration errors early, provide helpful error messages, and ensure type safety throughout the application. This prevents runtime errors from invalid configuration and improves developer experience with clear validation feedback.
+
+#### Problem Statement
+
+Currently, the config loader:
+- Accepts any JSON without validation
+- Allows unknown/invalid fields that are silently ignored
+- Provides no feedback for typos or incorrect types
+- Can cause cryptic runtime errors when invalid config is used
+- Lacks IntelliSense support for config editing
+
+Users need:
+- Clear error messages when config is invalid
+- Helpful suggestions for fixing validation errors
+- Type safety guarantees before execution
+- Prevention of common configuration mistakes
+
+#### Core Features
+
+##### 1. Zod Schema Definition
+
+**Create comprehensive Zod schema** (`config/validation.ts`):
+
+```typescript
+import { z } from 'zod';
+
+/**
+ * Source configuration schema
+ * Defines which files to parse for component documentation
+ */
+const SourceSchema = z.object({
+  /**
+   * Glob patterns for component files to include
+   * @example ["src/components/**\/*.{tsx,jsx}"]
+   */
+  include: z.array(z.string()).min(1, 'Must include at least one source pattern'),
+
+  /**
+   * Glob patterns for files to exclude from parsing
+   * @example ["**\/*.test.{tsx,jsx}", "**\/*.stories.{tsx,jsx}"]
+   */
+  exclude: z.array(z.string()).optional(),
+
+  /**
+   * File extensions to recognize as style files
+   * @example [".css", ".scss", ".module.css"]
+   */
+  styleFiles: z.array(z.string()).optional(),
+}).describe('Source file configuration');
+
+/**
+ * Output configuration schema
+ * Controls where documentation is generated
+ */
+const OutputSchema = z.object({
+  /**
+   * Directory where documentation will be generated
+   * @example "./docs"
+   */
+  directory: z.string().min(1, 'Output directory cannot be empty'),
+
+  /**
+   * Base URL for the documentation site
+   * Used for generating correct asset paths
+   * @example "/" or "/component-docs/"
+   */
+  baseUrl: z.string().optional(),
+
+  /**
+   * Path to static assets to copy to output
+   * @example "./public"
+   */
+  staticAssets: z.string().optional(),
+}).describe('Output configuration');
+
+/**
+ * Development server configuration schema
+ */
+const ServerSchema = z.object({
+  /**
+   * Port number for development server
+   * @default 6006
+   */
+  port: z.number().int().min(1024).max(65535).optional(),
+
+  /**
+   * Whether to automatically open browser on start
+   * @default true
+   */
+  open: z.boolean().optional(),
+}).describe('Development server configuration');
+
+/**
+ * Variant generation configuration schema
+ */
+const VariantsSchema = z.object({
+  /**
+   * Whether to automatically generate variant combinations
+   * @default true
+   */
+  autoGenerate: z.boolean().optional(),
+
+  /**
+   * Maximum number of variant permutations to generate
+   * Prevents exponential explosion of variants
+   * @default 20
+   */
+  maxPermutations: z.number().int().positive().optional(),
+
+  /**
+   * Default values for different prop types
+   * Used when generating example code
+   */
+  defaultValues: z.object({
+    string: z.string().optional(),
+    number: z.number().optional(),
+    children: z.string().optional(),
+  }).optional(),
+}).describe('Variant generation configuration');
+
+/**
+ * Theme token configuration schema
+ * Supports both legacy string format and new object format
+ */
+const ThemeTokenSchema = z.union([
+  z.string(), // Legacy format: "src/themes/light.css"
+  z.object({
+    /**
+     * Path to CSS/SCSS file containing theme tokens
+     * @example "src/themes/light.css"
+     */
+    source: z.string().min(1, 'Theme source file path is required'),
+
+    /**
+     * Background color for component preview areas
+     * Any valid CSS color value
+     * @example "#FFFFFF" or "rgb(255, 255, 255)"
+     */
+    background: z.string().optional(),
+  }),
+]);
+
+/**
+ * Theme configuration schema
+ */
+const ThemeSchema = z.object({
+  /**
+   * Array of theme configurations
+   * Each object maps theme names to their configuration
+   * @example [{ "light": { "source": "src/themes/light.css", "background": "#FFF" } }]
+   */
+  tokens: z.array(
+    z.record(z.string(), ThemeTokenSchema)
+  ).optional(),
+
+  /**
+   * ID of the default theme to use on initial load
+   * Must match one of the theme names in tokens array
+   * @default First theme in tokens array
+   */
+  defaultTheme: z.string().optional(),
+
+  /**
+   * Primary brand color
+   * Fallback if no theme is loaded
+   * @example "#0066cc"
+   */
+  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color').optional(),
+
+  /**
+   * Path to logo image file
+   */
+  logo: z.string().optional(),
+
+  /**
+   * Path to favicon file
+   */
+  favicon: z.string().optional(),
+}).describe('Theme and branding configuration');
+
+/**
+ * Test coverage configuration schema
+ */
+const CoverageSchema = z.object({
+  /**
+   * Whether to extract and display test coverage
+   * @default true
+   */
+  enabled: z.boolean().optional(),
+
+  /**
+   * Glob patterns for test files
+   * @example ["**\/*.test.{ts,tsx}"]
+   */
+  testPatterns: z.array(z.string()).optional(),
+
+  /**
+   * Path to Jest coverage report
+   * @default "coverage/coverage-summary.json"
+   */
+  coverageReportPath: z.string().optional(),
+
+  /**
+   * Minimum coverage thresholds for warnings
+   */
+  thresholds: z.object({
+    statements: z.number().min(0).max(100).optional(),
+    branches: z.number().min(0).max(100).optional(),
+    functions: z.number().min(0).max(100).optional(),
+    lines: z.number().min(0).max(100).optional(),
+  }).optional(),
+
+  /**
+   * Whether to display coverage badges in sidebar
+   * @default true
+   */
+  displayInSidebar: z.boolean().optional(),
+
+  /**
+   * Style of coverage badge
+   * @example "flat" | "flat-square" | "for-the-badge"
+   */
+  badgeStyle: z.string().optional(),
+}).describe('Test coverage configuration');
+
+/**
+ * Feature flags configuration schema
+ */
+const FeaturesSchema = z.object({
+  /**
+   * Enable search functionality
+   * @default true
+   */
+  search: z.boolean().optional(),
+
+  /**
+   * Enable dark mode toggle
+   * @default true
+   */
+  darkMode: z.boolean().optional(),
+
+  /**
+   * Show code snippets with syntax highlighting
+   * @default true
+   */
+  codeSnippets: z.boolean().optional(),
+
+  /**
+   * Enable interactive playground for props
+   * @default false
+   */
+  playground: z.boolean().optional(),
+
+  /**
+   * Display test coverage information
+   * @default true
+   */
+  testCoverage: z.boolean().optional(),
+}).describe('Feature flags');
+
+/**
+ * Main configuration schema
+ */
+export const DocumentorConfigSchema = z.object({
+  /**
+   * Project name
+   * Displayed in documentation header
+   * @example "Acme Design System"
+   */
+  name: z.string().min(1, 'Project name is required'),
+
+  /**
+   * Project description
+   * Displayed in documentation header and metadata
+   * @example "React component library for Acme products"
+   */
+  description: z.string().optional(),
+
+  /**
+   * Project version
+   * Displayed in documentation header
+   * @example "1.0.0"
+   */
+  version: z.string().regex(/^\d+\.\d+\.\d+/, 'Version must follow semantic versioning (e.g., 1.0.0)').optional(),
+
+  source: SourceSchema,
+  output: OutputSchema,
+  server: ServerSchema.optional(),
+  variants: VariantsSchema.optional(),
+  theme: ThemeSchema.optional(),
+  coverage: CoverageSchema.optional(),
+  features: FeaturesSchema.optional(),
+}).strict(); // strict() prevents unknown keys
+
+export type DocumentorConfig = z.infer<typeof DocumentorConfigSchema>;
+```
+
+##### 2. Enhanced Config Loader with Validation
+
+**Update** `cli/utils/config-loader.ts`:
+
+```typescript
+import * as fs from 'fs';
+import * as path from 'path';
+import { z } from 'zod';
+import { DocumentorConfigSchema } from '../../config/validation';
+import { defaultConfig } from '../../config/schema';
+
+/**
+ * Format Zod validation error for user-friendly display
+ */
+function formatValidationError(error: z.ZodError): string {
+  const lines = ['❌ Configuration validation failed:\n'];
+
+  for (const issue of error.issues) {
+    const pathStr = issue.path.join('.');
+    lines.push(`  • ${pathStr || 'root'}: ${issue.message}`);
+
+    // Add helpful suggestions for common errors
+    if (issue.code === 'invalid_type') {
+      lines.push(`    Expected: ${issue.expected}, Received: ${issue.received}`);
+    }
+
+    if (issue.code === 'unrecognized_keys') {
+      const keys = (issue as any).keys.join(', ');
+      lines.push(`    Unknown field(s): ${keys}`);
+      lines.push(`    Hint: Check for typos or remove unsupported fields`);
+    }
+  }
+
+  lines.push('\n📖 See documentation: https://github.com/your-org/documentor#configuration');
+
+  return lines.join('\n');
+}
+
+/**
+ * Load and validate configuration file
+ */
+export async function loadConfig(configPath: string): Promise<z.infer<typeof DocumentorConfigSchema>> {
+  const resolvedPath = path.resolve(configPath);
+
+  if (!fs.existsSync(resolvedPath)) {
+    console.warn(`⚠️  Config file not found: ${resolvedPath}`);
+    console.log('📝 Using default configuration\n');
+
+    // Validate default config
+    const defaultConfigWithName = {
+      name: 'Component Library',
+      ...defaultConfig,
+    };
+
+    return DocumentorConfigSchema.parse(defaultConfigWithName);
+  }
+
+  try {
+    const fileContent = fs.readFileSync(resolvedPath, 'utf-8');
+    const userConfig = JSON.parse(fileContent);
+
+    // Validate configuration
+    const validationResult = DocumentorConfigSchema.safeParse(userConfig);
+
+    if (!validationResult.success) {
+      console.error(formatValidationError(validationResult.error));
+      process.exit(1);
+    }
+
+    console.log('✅ Configuration validated successfully\n');
+
+    return validationResult.data;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      console.error(`❌ Error parsing config file: Invalid JSON syntax`);
+      console.error(`   ${error.message}\n`);
+    } else {
+      console.error(`❌ Error loading config file:`, error);
+    }
+    process.exit(1);
+  }
+}
+
+/**
+ * Validate config without loading it (for CLI validation command)
+ */
+export async function validateConfig(configPath: string): Promise<boolean> {
+  const resolvedPath = path.resolve(configPath);
+
+  if (!fs.existsSync(resolvedPath)) {
+    console.error(`❌ Config file not found: ${resolvedPath}`);
+    return false;
+  }
+
+  try {
+    const fileContent = fs.readFileSync(resolvedPath, 'utf-8');
+    const userConfig = JSON.parse(fileContent);
+
+    const validationResult = DocumentorConfigSchema.safeParse(userConfig);
+
+    if (!validationResult.success) {
+      console.error(formatValidationError(validationResult.error));
+      return false;
+    }
+
+    console.log('✅ Configuration is valid!\n');
+    console.log('📋 Configuration summary:');
+    console.log(`   Project: ${validationResult.data.name}`);
+    console.log(`   Source patterns: ${validationResult.data.source.include.length}`);
+    console.log(`   Output: ${validationResult.data.output.directory}`);
+
+    if (validationResult.data.theme?.tokens) {
+      const themeCount = validationResult.data.theme.tokens.reduce(
+        (count, group) => count + Object.keys(group).length,
+        0
+      );
+      console.log(`   Themes: ${themeCount}`);
+    }
+
+    return true;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      console.error(`❌ Invalid JSON syntax:`);
+      console.error(`   ${error.message}`);
+    } else {
+      console.error(`❌ Error validating config:`, error);
+    }
+    return false;
+  }
+}
+```
+
+##### 3. CLI Validation Command
+
+**Add new command** `cli/commands/validate.ts`:
+
+```typescript
+import { validateConfig } from '../utils/config-loader';
+
+export async function validateCommand(options: { config?: string }) {
+  const configPath = options.config || './documentor.config.json';
+
+  console.log(`🔍 Validating configuration file: ${configPath}\n`);
+
+  const isValid = await validateConfig(configPath);
+
+  if (isValid) {
+    console.log('\n✨ Your configuration is ready to use!');
+    process.exit(0);
+  } else {
+    console.log('\n💡 Fix the errors above and try again');
+    process.exit(1);
+  }
+}
+```
+
+**Update** `bin/documentor.js` to add validate command:
+
+```javascript
+#!/usr/bin/env node
+
+const { program } = require('commander');
+
+// ... existing commands ...
+
+program
+  .command('validate')
+  .description('Validate documentor.config.json file')
+  .option('-c, --config <path>', 'Path to config file', './documentor.config.json')
+  .action(async (options) => {
+    const { validateCommand } = require('../cli/commands/validate');
+    await validateCommand(options);
+  });
+
+program.parse(process.argv);
+```
+
+##### 4. JSON Schema Generation for IDE Support
+
+**Add script** `scripts/generate-json-schema.ts`:
+
+```typescript
+import { zodToJsonSchema } from 'zod-to-json-schema';
+import { DocumentorConfigSchema } from '../config/validation';
+import * as fs from 'fs';
+import * as path from 'path';
+
+/**
+ * Generate JSON Schema from Zod schema for IDE IntelliSense
+ */
+function generateJSONSchema() {
+  const jsonSchema = zodToJsonSchema(DocumentorConfigSchema, {
+    name: 'DocumentorConfig',
+    $refStrategy: 'none',
+  });
+
+  // Add $schema property
+  const schemaWithMeta = {
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    title: 'Documentor Configuration',
+    description: 'Configuration file for Documentor component documentation generator',
+    ...jsonSchema,
+  };
+
+  const outputPath = path.join(__dirname, '..', 'documentor.schema.json');
+  fs.writeFileSync(outputPath, JSON.stringify(schemaWithMeta, null, 2));
+
+  console.log(`✅ Generated JSON Schema at ${outputPath}`);
+}
+
+generateJSONSchema();
+```
+
+**Add to** `package.json`:
+
+```json
+{
+  "scripts": {
+    "generate-schema": "ts-node scripts/generate-json-schema.ts"
+  }
+}
+```
+
+##### 5. VSCode Integration
+
+**Create** `.vscode/settings.json` template:
+
+```json
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["documentor.config.json"],
+      "url": "./documentor.schema.json"
+    }
+  ]
+}
+```
+
+This enables IntelliSense, auto-completion, and inline validation in VSCode.
+
+#### Implementation Benefits
+
+1. **Early Error Detection**: Catch configuration errors before execution
+2. **Clear Error Messages**: Helpful, actionable error messages with suggestions
+3. **Type Safety**: Full TypeScript type inference from validated config
+4. **IDE Support**: IntelliSense and validation in VSCode/IDEs
+5. **Documentation**: Schema serves as self-documenting configuration reference
+6. **Developer Experience**: Reduce debugging time for config issues
+7. **Prevent Breaking Changes**: Schema evolution tracking
+8. **CLI Validation**: Dedicated command to validate config without running build
+
+#### Error Message Examples
+
+**Unknown field error:**
+```
+❌ Configuration validation failed:
+
+  • theme: Unrecognized key(s) in object: 'colors'
+    Unknown field(s): colors
+    Hint: Check for typos or remove unsupported fields
+
+📖 See documentation: https://github.com/your-org/documentor#configuration
+```
+
+**Type mismatch error:**
+```
+❌ Configuration validation failed:
+
+  • server.port: Expected number, received string
+    Expected: number, Received: string
+
+  • source.include: Required
+    Must include at least one source pattern
+
+📖 See documentation: https://github.com/your-org/documentor#configuration
+```
+
+**Theme validation error:**
+```
+❌ Configuration validation failed:
+
+  • theme.tokens.0.light.source: String must contain at least 1 character(s)
+    Theme source file path is required
+
+  • theme.primaryColor: Invalid
+    Must be a valid hex color
+
+📖 See documentation: https://github.com/your-org/documentor#configuration
+```
+
+#### Usage Examples
+
+**Validate config before build:**
+```bash
+# Validate default config
+documentor validate
+
+# Validate specific config file
+documentor validate --config ./custom-config.json
+
+# Validate as part of CI/CD
+npm run validate-config && npm run docs:build
+```
+
+**Programmatic validation:**
+```typescript
+import { DocumentorConfigSchema } from './config/validation';
+
+const config = {
+  name: 'My Library',
+  source: { include: ['src/**/*.tsx'] },
+  output: { directory: './docs' },
+};
+
+const result = DocumentorConfigSchema.safeParse(config);
+
+if (result.success) {
+  // Config is valid, use result.data
+  buildDocumentation(result.data);
+} else {
+  // Config is invalid, result.error contains details
+  console.error(result.error.errors);
+}
+```
+
+#### Migration Guide
+
+For users upgrading from unvalidated config:
+
+1. **Install Zod**: `npm install zod`
+2. **Run validation**: `documentor validate`
+3. **Fix any errors** based on validation output
+4. **Generate schema**: `npm run generate-schema`
+5. **Configure IDE**: Copy `.vscode/settings.json` to project
+
+#### Deliverables
+
+**Phase 3.3 Completion Checklist:**
+- [ ] Install Zod dependency
+- [ ] Create comprehensive Zod schema in `config/validation.ts`
+- [ ] Add JSDoc descriptions to all schema fields
+- [ ] Update config-loader.ts with validation
+- [ ] Create formatValidationError helper function
+- [ ] Add validateConfig function for standalone validation
+- [ ] Create CLI `validate` command
+- [ ] Add validation to build and dev commands
+- [ ] Create JSON Schema generation script
+- [ ] Generate documentor.schema.json file
+- [ ] Create VSCode settings template
+- [ ] Document validation in README
+- [ ] Add migration guide for existing users
+- [ ] Create examples of common validation errors
+- [ ] Add validation to CI/CD documentation
+- [ ] Test validation with invalid configs
+- [ ] Test validation with edge cases
+- [ ] Ensure helpful error messages for all validation failures
+
 ## Future Enhancements
 
 ### Configuration Options
@@ -2678,3 +4124,420 @@ The CI/CD and deployment features are integrated into **Phase 3** of the roadmap
 - ✅ Version management for documentation
 - ✅ Docker containerization
 - ✅ CDN optimization and caching strategies
+
+### Phase 3.4: Enhanced JSDoc Directives and Display Templates
+
+**Objective**: Upgrade the parser to use proper JSDoc `@` directives instead of inline comments, and add support for customizable variant display templates. This improves code clarity, follows JSDoc conventions, and provides flexible control over how variant examples are titled in the documentation.
+
+#### Problem Statement
+
+Currently, the system has two limitations:
+
+1. **Non-standard directive syntax**: Using inline comments like `/* @renderVariants: true */` doesn't follow JSDoc conventions
+2. **Generic variant titles**: Variant examples display technical prop names like `variant="primary"` instead of user-friendly titles like "Primary Button"
+
+Users need:
+- Standard JSDoc `@` directive syntax for better IDE support and clarity
+- Ability to customize how variant examples are titled in the documentation
+- Template-based approach to generate meaningful, human-readable titles
+
+#### Core Features
+
+##### 1. JSDoc Directive Syntax
+
+**Before (inline comment syntax):**
+```typescript
+export interface ButtonProps {
+  /* Controls the display variant of the button component */
+  /* renderVariants: true */
+  variant?: ButtonVariant;
+}
+```
+
+**After (JSDoc `@` directive syntax):**
+```typescript
+export interface ButtonProps {
+  /**
+   * Controls the display variant of the button component
+   * @renderVariants true
+   */
+  variant?: ButtonVariant;
+}
+```
+
+**Key Changes:**
+- Use proper JSDoc block comments `/** ... */`
+- Directives must start with `@` symbol
+- Follows standard JSDoc conventions for better tooling support
+- Provides better syntax highlighting and IDE integration
+
+##### 2. Display Template Directive
+
+**New `@displayTemplate` directive** for customizing variant titles:
+
+```typescript
+export interface ButtonProps {
+  /**
+   * Controls the display variant of the button component
+   * @renderVariants true
+   * @displayTemplate {variant} Button
+   */
+  variant?: ButtonVariant;
+}
+```
+
+**Template Syntax:**
+- Use curly braces `{propName}` to reference prop values
+- Prop values are automatically converted to Initial Uppercase (capitalize first letter)
+- Template is applied to each generated variant
+
+**Examples:**
+
+| Prop Value | Template | Resulting Title |
+|------------|----------|-----------------|
+| `primary` | `{variant} Button` | "Primary Button" |
+| `secondary` | `{variant} Button` | "Secondary Button" |
+| `outline` | `{variant} Button` | "Outline Button" |
+| `small` | `{size} Size` | "Small Size" |
+| `large` | `{size} Input Field` | "Large Input Field" |
+
+**Default Behavior:**
+If no `@displayTemplate` is provided, fall back to the current format:
+- `variant="primary"` → stays as `variant="primary"`
+
+##### 3. Parser Implementation
+
+**Update** `parser/prop-parser.ts`:
+
+```typescript
+interface PropMetadata {
+  name: string;
+  type: string;
+  description?: string;
+  required: boolean;
+  defaultValue?: any;
+  renderVariants?: boolean;
+  displayTemplate?: string; // NEW
+}
+
+/**
+ * Extract JSDoc directives from property comments
+ */
+function extractJSDocDirectives(jsDoc: JSDoc[]): {
+  renderVariants: boolean;
+  displayTemplate?: string;
+} {
+  const directives = {
+    renderVariants: false,
+    displayTemplate: undefined as string | undefined,
+  };
+
+  for (const doc of jsDoc) {
+    const tags = doc.tags || [];
+    
+    for (const tag of tags) {
+      const tagName = tag.tagName.getText();
+      const tagText = tag.comment?.toString().trim();
+
+      // Parse @renderVariants directive
+      if (tagName === 'renderVariants') {
+        directives.renderVariants = tagText === 'true';
+      }
+
+      // Parse @displayTemplate directive
+      if (tagName === 'displayTemplate' && tagText) {
+        directives.displayTemplate = tagText;
+      }
+    }
+  }
+
+  return directives;
+}
+
+/**
+ * Parse property node to extract metadata
+ */
+function parseProperty(property: PropertySignature): PropMetadata {
+  const name = property.getName();
+  const type = property.getType().getText();
+  const jsDocComments = property.getJsDocs();
+  
+  // Extract description from JSDoc
+  const description = jsDocComments
+    .map(doc => doc.getDescription().trim())
+    .filter(Boolean)
+    .join('\n');
+
+  // Extract directives from JSDoc tags
+  const directives = extractJSDocDirectives(jsDocComments);
+
+  return {
+    name,
+    type,
+    description,
+    required: !property.hasQuestionToken(),
+    defaultValue: extractDefaultValue(property),
+    renderVariants: directives.renderVariants,
+    displayTemplate: directives.displayTemplate,
+  };
+}
+```
+
+##### 4. Variant Generator with Template Support
+
+**Update** `generator/variant-generator.ts`:
+
+```typescript
+interface VariantExample {
+  props: Record<string, any>;
+  code: string;
+  title: string; // NEW: custom title from template
+}
+
+/**
+ * Apply display template to generate variant title
+ * @param template - Template string like "{variant} Button"
+ * @param propName - Name of the prop being rendered
+ * @param propValue - Value of the prop (e.g., "primary")
+ * @returns Formatted title (e.g., "Primary Button")
+ */
+function applyDisplayTemplate(
+  template: string,
+  propName: string,
+  propValue: string
+): string {
+  // Convert prop value to Initial Uppercase
+  const formattedValue = propValue.charAt(0).toUpperCase() + propValue.slice(1);
+  
+  // Replace {propName} with formatted value
+  const placeholder = `{${propName}}`;
+  return template.replace(placeholder, formattedValue);
+}
+
+/**
+ * Generate variant title based on template or default format
+ */
+function generateVariantTitle(
+  propName: string,
+  propValue: string,
+  displayTemplate?: string
+): string {
+  if (displayTemplate) {
+    return applyDisplayTemplate(displayTemplate, propName, propValue);
+  }
+  
+  // Default format: variant="primary"
+  return `${propName}="${propValue}"`;
+}
+
+/**
+ * Generate variant examples for a property
+ */
+function generateVariantsForProp(
+  componentName: string,
+  propMetadata: PropMetadata,
+  propValues: string[]
+): VariantExample[] {
+  const variants: VariantExample[] = [];
+
+  for (const value of propValues) {
+    // Generate title using template or default
+    const title = generateVariantTitle(
+      propMetadata.name,
+      value,
+      propMetadata.displayTemplate
+    );
+
+    // Generate code and props
+    const code = `<${componentName} ${propMetadata.name}="${value}">Example</${componentName}>`;
+    const props = {
+      [propMetadata.name]: value,
+      children: 'Example',
+    };
+
+    variants.push({ props, code, title });
+  }
+
+  return variants;
+}
+```
+
+##### 5. Update Metadata Schema
+
+**Update** `types/metadata.ts`:
+
+```typescript
+export interface PropInfo {
+  name: string;
+  type: string;
+  description?: string;
+  required: boolean;
+  defaultValue?: any;
+  renderVariants?: boolean;
+  displayTemplate?: string; // NEW
+}
+
+export interface VariantExample {
+  props: Record<string, any>;
+  code: string;
+  title: string; // NEW: custom title
+}
+
+export interface ComponentMetadata {
+  name: string;
+  description?: string;
+  props: PropInfo[];
+  variants: VariantExample[];
+  cssVariables: CSSVariable[];
+  filePath: string;
+  imports: string[];
+}
+```
+
+##### 6. UI Display Updates
+
+**Update** `website/src/components/VariantShowcase.tsx`:
+
+```typescript
+const VariantShowcase: React.FC<VariantShowcaseProps> = ({ componentName, variants }) => {
+  return (
+    <div className="variant-showcase">
+      <h2>Examples ({variants.length})</h2>
+      <div className="variants-grid">
+        {variants.map((variant, index) => (
+          <div key={index} className="variant-card">
+            <div className="variant-header">
+              {/* Use custom title from metadata instead of generating from props */}
+              <h3 className="variant-title">{variant.title}</h3>
+              <button
+                className="copy-button"
+                onClick={() => copyCode(variant.code, index)}
+              >
+                Copy
+              </button>
+            </div>
+
+            <div className="variant-preview">
+              <div className="preview-content">
+                <LivePreview
+                  componentName={componentName}
+                  props={variant.props}
+                />
+              </div>
+            </div>
+
+            <div className="variant-code">
+              <SyntaxHighlighter language="jsx">
+                {variant.code}
+              </SyntaxHighlighter>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+#### Implementation Steps
+
+**Phase 3.4 Deliverables:**
+
+1. **Parser Updates**
+   - [ ] Update `prop-parser.ts` to parse `@renderVariants` and `@displayTemplate` JSDoc tags
+   - [ ] Remove support for old inline comment syntax (breaking change)
+   - [ ] Add validation for directive syntax
+   - [ ] Extract display template from JSDoc tags
+
+2. **Variant Generator Updates**
+   - [ ] Implement `applyDisplayTemplate()` function
+   - [ ] Add Initial Uppercase text transformation
+   - [ ] Update `generateVariantsForProp()` to use display templates
+   - [ ] Fall back to default format when no template provided
+   - [ ] Add support for multiple prop placeholders in templates (future enhancement)
+
+3. **Type Definitions**
+   - [ ] Add `displayTemplate?: string` to `PropInfo` interface
+   - [ ] Add `title: string` to `VariantExample` interface
+   - [ ] Update all dependent types
+
+4. **Component Updates**
+   - [ ] Update `Button.tsx` to use new JSDoc directive syntax (already done)
+   - [ ] Update `InputField.tsx` to use new JSDoc directive syntax
+   - [ ] Add `@displayTemplate` examples to reference components
+
+5. **UI Updates**
+   - [ ] Update `VariantShowcase.tsx` to display `variant.title` instead of generating from props
+   - [ ] Update variant card header styling if needed
+   - [ ] Ensure title displays correctly across all screen sizes
+
+6. **Testing**
+   - [ ] Test parser with various `@displayTemplate` formats
+   - [ ] Verify Initial Uppercase transformation
+   - [ ] Test fallback behavior when no template provided
+   - [ ] Verify backward compatibility (components without directives still work)
+
+7. **Documentation**
+   - [ ] Update PROJECT.md with new directive syntax (this file)
+   - [ ] Update THEME_SYSTEM.md if relevant
+   - [ ] Add examples to reference components
+   - [ ] Document template syntax and placeholder rules
+
+#### Breaking Changes
+
+**Directive Syntax Change:**
+- Old: `/* renderVariants: true */` (inline comment)
+- New: `@renderVariants true` (JSDoc tag)
+
+**Migration Required:**
+Components using the old inline comment syntax must be updated to use JSDoc blocks with `@` directives:
+
+```diff
+- /* Controls the display variant */
+- /* renderVariants: true */
++ /**
++  * Controls the display variant
++  * @renderVariants true
++  */
+```
+
+#### Advanced Template Syntax (Future Enhancement)
+
+For Phase 3.5+, consider supporting:
+
+**Multiple Placeholders:**
+```typescript
+/**
+ * @displayTemplate {size} {variant} Button
+ */
+```
+Result: "Large Primary Button"
+
+**Conditional Templates:**
+```typescript
+/**
+ * @displayTemplate {variant ? "{variant} Button" : "Default Button"}
+ */
+```
+
+**Custom Transformations:**
+```typescript
+/**
+ * @displayTemplate {variant|uppercase} BUTTON
+ */
+```
+Result: "PRIMARY BUTTON"
+
+#### User Benefits
+
+1. **Clearer Code**: JSDoc conventions improve readability and IDE support
+2. **Better Documentation**: Custom titles make examples more intuitive
+3. **Flexibility**: Template system adapts to different component needs
+4. **Professional Presentation**: Human-readable titles vs technical prop strings
+5. **Consistency**: Standard JSDoc syntax across all directives
+
+---
+
+**Date**: December 10, 2024  
+**Phase**: 3.4 - Enhanced JSDoc Directives and Display Templates  
+**Status**: Complete

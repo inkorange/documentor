@@ -2,6 +2,7 @@ import { buildDocumentation } from '../../generator/builder';
 import { loadConfig } from '../utils/config-loader';
 import * as fs from 'fs';
 import * as path from 'path';
+import { copyTemplateToOutput } from '../utils/template-copier';
 
 export interface BuildOptions {
   config: string;
@@ -40,11 +41,16 @@ export async function buildCommand(options: BuildOptions) {
 
     const result = await buildDocumentation(config, options.verbose);
 
+    // Copy template website to output directory
+    console.log('\n📋 Copying website template...');
+    await copyTemplateToOutput(outputDir, options.verbose);
+
     console.log('\n✅ Build complete!');
     console.log(`📄 Generated ${result.componentCount} component pages`);
     console.log(`📊 Total variants: ${result.variantCount}`);
     console.log(`🎨 CSS variables: ${result.cssVariableCount}`);
     console.log(`\n📂 Output: ${path.resolve(outputDir)}`);
+    console.log(`💡 Run "documentor serve" to preview your documentation`);
   } catch (error) {
     console.error('❌ Build failed:', error);
     process.exit(1);

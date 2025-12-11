@@ -1,0 +1,67 @@
+/**
+ * Light Theme Design Tokens
+ * Default theme for component documentation
+ */
+
+:root {
+  /* Primary Colors */
+  --primary-color: #0066cc;
+  --primary-hover: #0052a3;
+  --primary-active: #003d7a;
+
+  /* Background Colors */
+  --background-primary: #ffffff;
+  --background-secondary: #f9fafb;
+  --background-tertiary: #f3f4f6;
+
+  /* Text Colors */
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+
+  /* Border Colors */
+  --border-color: #e5e7eb;
+  --border-focus: #0066cc;
+
+  /* Component-Specific Tokens */
+  --button-primary-bg: var(--primary-color);
+  --button-primary-text: #ffffff;
+  --button-secondary-bg: #6c757d;
+  --button-secondary-text: #ffffff;
+  --button-outline-border: var(--primary-color);
+  --button-outline-text: var(--primary-color);
+
+  --input-background: #ffffff;
+  --input-border: #e5e7eb;
+  --input-text: #1f2937;
+  --input-placeholder: #9ca3af;
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Typography */
+  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-family-mono: 'Monaco', 'Courier New', monospace;
+  --font-size-base: 1rem;
+  --font-weight-normal: 400;
+  --font-weight-bold: 600;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+  /* Border Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+}

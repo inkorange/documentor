@@ -3,6 +3,7 @@ import { ComponentMetadata, PropMetadata } from '../parser/component-parser';
 export interface VariantExample {
   props: Record<string, any>;
   code: string;
+  title: string;
 }
 
 export class VariantGenerator {
@@ -35,8 +36,8 @@ export class VariantGenerator {
     // Limit to max permutations
     const limited = permutations.slice(0, this.maxPermutations);
 
-    // Convert to examples with code
-    return limited.map(props => this.createExample(component.name, props));
+    // Convert to examples with code and titles
+    return limited.map(props => this.createExample(component, props, variantProps));
   }
 
   /**
@@ -186,19 +187,91 @@ export class VariantGenerator {
       }
     }
 
-    return this.createExample(component.name, props);
+    return this.createExample(component, props, []);
   }
 
   /**
-   * Create an example with code snippet
+   * Create an example with code snippet and title
    */
-  private createExample(componentName: string, props: Record<string, any>): VariantExample {
-    const code = this.generateCodeSnippet(componentName, props);
+  private createExample(
+    component: ComponentMetadata,
+    props: Record<string, any>,
+    variantProps: string[]
+  ): VariantExample {
+    const code = this.generateCodeSnippet(component.name, props);
+    const title = this.generateTitle(component, props, variantProps);
 
     return {
       props,
       code,
+      title,
     };
+  }
+
+  /**
+   * Generate variant title using displayTemplate or default format
+   */
+  private generateTitle(
+    component: ComponentMetadata,
+    props: Record<string, any>,
+    variantProps: string[]
+  ): string {
+    // Look for any variant prop with a displayTemplate
+    if (variantProps.length > 0) {
+      for (const propName of variantProps) {
+        const propMeta = component.props[propName];
+        if (propMeta?.displayTemplate) {
+          // Found a displayTemplate, use it with all variant props
+          return this.applyDisplayTemplate(
+            propMeta.displayTemplate,
+            props,
+            variantProps
+          );
+        }
+      }
+    }
+
+    // Default format: prop="value" for each variant prop
+    if (variantProps.length > 0) {
+      const parts = variantProps.map(propName => {
+        const value = props[propName];
+        return `${propName}="${value}"`;
+      });
+      return parts.join(' ');
+    }
+
+    // No variant props, use "Default"
+    return 'Default';
+  }
+
+  /**
+   * Apply display template to generate variant title
+   * @param template - Template string like "{size} {variant} InputField"
+   * @param props - All props for this variant
+   * @param variantProps - Names of variant props to replace in template
+   * @returns Formatted title (e.g., "Small Primary InputField")
+   */
+  private applyDisplayTemplate(
+    template: string,
+    props: Record<string, any>,
+    variantProps: string[]
+  ): string {
+    let result = template;
+
+    // Replace each {propName} placeholder with its formatted value
+    for (const propName of variantProps) {
+      const propValue = props[propName];
+      if (propValue !== undefined) {
+        // Convert prop value to Initial Uppercase
+        const formattedValue = String(propValue).charAt(0).toUpperCase() + String(propValue).slice(1);
+
+        // Replace {propName} with formatted value
+        const placeholder = `{${propName}}`;
+        result = result.replace(placeholder, formattedValue);
+      }
+    }
+
+    return result;
   }
 
   /**

@@ -8,12 +8,14 @@ export interface InputFieldProps extends Omit<React.InputHTMLAttributes<HTMLInpu
   /**
    * Visual variant of the input field
    * @renderVariants true
+   * @displayTemplate {size} {variant} InputField
    */
   variant?: InputFieldVariant;
 
   /**
    * Size of the input field
    * @renderVariants true
+   * @displayTemplate {size} {variant} InputField
    */
   size?: InputFieldSize;
 

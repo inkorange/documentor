@@ -1,5 +1,6 @@
 /**
  * Configuration schema for Documentor
+ * This defines the TypeScript types for configuration
  */
 
 export interface DocumentorConfig {
@@ -35,6 +36,8 @@ export interface DocumentorConfig {
   };
 
   theme?: {
+    tokens?: Array<Record<string, string | { source: string; background?: string }>>;
+    defaultTheme?: string;
     primaryColor?: string;
     logo?: string;
     favicon?: string;

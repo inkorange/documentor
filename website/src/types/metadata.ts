@@ -5,6 +5,7 @@ export interface PropMetadata {
   default?: string;
   description?: string;
   renderVariants?: boolean;
+  displayTemplate?: string;
   hideInDocs?: boolean;
   exampleValue?: string;
 }
@@ -20,6 +21,7 @@ export interface ComponentMetadata {
 export interface VariantExample {
   props: Record<string, any>;
   code: string;
+  title: string;
 }
 
 export interface CSSVariable {
@@ -28,10 +30,26 @@ export interface CSSVariable {
   default?: string;
 }
 
+export interface CoverageMetrics {
+  statements: { covered: number; total: number; percentage: number };
+  branches: { covered: number; total: number; percentage: number };
+  functions: { covered: number; total: number; percentage: number };
+  lines: { covered: number; total: number; percentage: number };
+}
+
+export interface ComponentCoverage {
+  componentName: string;
+  filePath: string;
+  metrics: CoverageMetrics;
+  hasTests: boolean;
+  testFilePath?: string;
+}
+
 export interface ComponentDocumentation {
   component: ComponentMetadata;
   variants: VariantExample[];
   cssVariables: CSSVariable[];
+  coverage?: ComponentCoverage;
 }
 
 export interface ComponentSummary {
