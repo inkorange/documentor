@@ -28,7 +28,8 @@
       "Bash(npx ts-node:*)",
       "Bash(ls:*)",
       "Bash(npx changeset:*)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(npm view:*)"
     ]
   }
 }

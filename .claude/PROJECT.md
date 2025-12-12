@@ -5007,8 +5007,8 @@ jobs:
         uses: changesets/action@v1
         with:
           publish: npm run release
-          title: 'chore: version packages'
-          commit: 'chore: version packages'
+          title: 'VERSIONCHANGE - DocSpark Release'
+          commit: 'VERSIONCHANGE - DocSpark Release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

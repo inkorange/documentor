@@ -1,6 +1,9 @@
 {
-  "name": "docspark",
+  "name": "@inkorange/docspark",
   "version": "0.1.1",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Automatic documentation generator for React components with live previews and variant showcases",
   "keywords": [
     "documentation",
