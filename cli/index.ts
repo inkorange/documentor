@@ -24,7 +24,6 @@ program
   .description('Build static documentation site')
   .option('-c, --config <path>', 'Config file path', './docspark.config.json')
   .option('--base-url <url>', 'Base URL for the site', '/')
-  .option('--clean', 'Clean build directory before building')
   .option('--verbose', 'Verbose output')
   .action(buildCommand);
 

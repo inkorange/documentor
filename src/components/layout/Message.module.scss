@@ -1,0 +1,59 @@
+/**
+Message Tokens Referenced:
+--Message-alert-background-color
+--Message-alert-text-color
+--Message-error-background-color
+--Message-error-text-color
+--Message-warning-text-color
+*/
+
+.msg {
+	--Message-alert-background-color-local: var(--Message-alert-background-color, #f0f0f0);
+	--Message-error-background-color-local: none;
+	--Message-alert-text-color-local: var(--Message-alert-text-color, #1d1d1d);
+	--Message-error-text-color-local: var(--Message-error-text-color, #dc0019);
+	--Message-warning-text-color-local: var(--Message-warning-text-color, #5f5f5f);
+
+	display: flex;
+	align-items: flex-start;
+	gap: var(--spacing-xs);
+	border-radius: var(--spacing-3xs);
+
+	svg:first-child {
+		flex-shrink: 0;
+		margin-top: calc(var(--spacing-4xs) + 0.5px);
+		circle {
+			fill: transparent;
+		}
+	}
+
+	&--alert {
+		padding: var(--spacing-xs) var(--spacing-xs);
+		background-color: var(--Message-alert-background-color-local);
+		color: var(--Message-alert-text-color-local);
+	}
+
+	&--error {
+		background-color: var(--Message-error-background-color-local);
+		color: var(--Message-error-text-color-local);
+	}
+
+	&--warning {
+		gap: var(--spacing-2xs);
+		font-size: var(--font-size-body);
+		line-height: calc(20 / 14);
+		margin: var(--spacing-xs) 0;
+		color: var(--Message-warning-text-color-local);
+		> svg:first-child {
+			margin-top: var(--spacing-4xs);
+		}
+	}
+
+	&--small {
+		font-size: var(--font-size-subtext);
+		gap: var(--spacing-2xs);
+		svg:first-child {
+			margin-top: 0;
+		}
+	}
+}

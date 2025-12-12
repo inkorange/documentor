@@ -34,7 +34,8 @@
       "Bash(kill:*)",
       "Bash(pkill:*)",
       "Bash(timeout 10 node:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(npm run:*)"
     ]
   }
 }
