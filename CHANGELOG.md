@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.3
+
+### Patch Changes
+
+- 8eb0e53: Client-side Component build fixes and documentation
+
 ## 0.1.2
 
 ### Patch Changes
