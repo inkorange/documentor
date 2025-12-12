@@ -31,8 +31,9 @@ program
 program
   .command('serve')
   .description('Serve built documentation')
-  .option('-p, --port <port>', 'Server port', '8080')
-  .option('-d, --dir <directory>', 'Documentation directory', './docs')
+  .option('-p, --port <port>', 'Server port (defaults to config or 8080)')
+  .option('-d, --dir <directory>', 'Documentation directory (defaults to config or ./docs)')
+  .option('-c, --config <path>', 'Config file path', './docspark.config.json')
   .action(serveCommand);
 
 program.parse(process.argv);

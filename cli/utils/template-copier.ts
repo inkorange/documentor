@@ -36,22 +36,33 @@ export async function copyTemplateToOutput(outputDir: string, verbose?: boolean)
  * Handles both development (local) and production (npm package) scenarios
  */
 function findTemplateDirectory(): string {
-  // Try local template directory first (development)
+  // Try local template directory first (development - in project root)
   const localTemplate = path.join(process.cwd(), 'template');
   if (fs.existsSync(localTemplate)) {
     return localTemplate;
   }
 
   // Try package template directory (production - npm installed)
-  // When installed via npm, __dirname will be in node_modules/documentor/cli/utils
-  const packageTemplate = path.join(__dirname, '../../template');
+  // When installed via npm, __dirname will be in node_modules/@inkorange/docspark/dist/cli/utils
+  // So we need to go up 3 levels to get to the package root, then into template/
+  const packageTemplate = path.join(__dirname, '../../../template');
   if (fs.existsSync(packageTemplate)) {
     return packageTemplate;
   }
 
-  // Fallback: try relative to bin directory
-  const binTemplate = path.join(__dirname, '../../../template');
-  return binTemplate;
+  // Fallback for different installation scenarios
+  const altTemplate = path.join(__dirname, '../../template');
+  if (fs.existsSync(altTemplate)) {
+    return altTemplate;
+  }
+
+  // Last resort: throw error with helpful message
+  throw new Error(
+    'Template directory not found. Searched in:\n' +
+    `  - ${localTemplate}\n` +
+    `  - ${packageTemplate}\n` +
+    `  - ${altTemplate}`
+  );
 }
 
 /**

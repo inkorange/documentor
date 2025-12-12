@@ -165,9 +165,8 @@ Create `docspark.config.json` in your project root:
   },
 
   "coverage": {
-    "enabled": true,
-    "coverageDirectory": "./coverage",
-    "threshold": {
+    "enabled": false,
+    "thresholds": {
       "statements": 80,
       "branches": 80,
       "functions": 80,
@@ -378,6 +377,95 @@ npx docspark dev [options]
 - `-c, --config <path>` - Config file path
 
 Watches source files and rebuilds on changes.
+
+---
+
+## Test Coverage Integration
+
+DocSpark can automatically display Jest test coverage metrics alongside your component documentation.
+
+### How It Works
+
+When you enable coverage in your config, DocSpark will:
+1. **Automatically run your tests** with the `--coverage` flag
+2. **Generate coverage data** via Jest
+3. **Include coverage metrics** in your documentation
+
+No manual steps required - just enable it in your config!
+
+### Setup
+
+First, ensure your `package.json` has Jest configured with coverage reporters:
+
+```json
+{
+  "jest": {
+    "coverageReporters": ["json-summary", "text", "lcov"]
+  }
+}
+```
+
+Then enable coverage in your `docspark.config.json`:
+
+```json
+{
+  "coverage": {
+    "enabled": true
+  }
+}
+```
+
+### Usage
+
+Simply run the build command - coverage happens automatically:
+
+```bash
+npx docspark build
+```
+
+DocSpark will:
+1. Run `npm test -- --coverage` automatically
+2. Generate `coverage/coverage-summary.json`
+3. Include coverage metrics in the documentation
+
+Coverage metrics appear as:
+- Coverage badges on component cards
+- Detailed coverage metrics per component
+- Visual indicators for test status
+
+### Configuration
+
+Coverage is **disabled by default**. To enable it, add to your config:
+
+```json
+{
+  "coverage": {
+    "enabled": true
+  }
+}
+```
+
+You can also configure coverage thresholds (for display purposes):
+
+```json
+{
+  "coverage": {
+    "enabled": true,
+    "thresholds": {
+      "statements": 80,
+      "branches": 80,
+      "functions": 80,
+      "lines": 80
+    }
+  }
+}
+```
+
+### Notes
+
+- Coverage is only included when `coverage.enabled` is explicitly set to `true`
+- If tests fail, the build will continue with a warning
+- Without coverage enabled, no test-related UI will appear in the docs
 
 ---
 

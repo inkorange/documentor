@@ -18,13 +18,8 @@
   },
   "files": [
     "bin/",
-    "cli/",
-    "config/",
-    "generator/",
-    "parser/",
-    "scripts/",
-    "template/",
-    "tsconfig.cli.json"
+    "dist/",
+    "template/"
   ],
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
@@ -54,8 +49,9 @@
     "copy-components": "node ./scripts/copy-components.js",
     "copy-docs-assets": "node ./scripts/copy-docs-assets.js",
     "build:website": "npm run copy-components && cd website && BUILD_PATH=../website/build react-scripts build && cd ..",
+    "build:cli": "tsc --project tsconfig.cli.json",
     "build:template": "node ./scripts/build-template.js",
-    "prepublishOnly": "npm run build:template",
+    "prepublishOnly": "npm run build:cli && npm run build:template",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "docspark": "node ./bin/docspark.js",
@@ -72,6 +68,9 @@
       "react-app",
       "react-app/jest"
     ]
+  },
+  "jest": {
+    "coverageReporters": ["json", "json-summary", "lcov", "text", "clover"]
   },
   "browserslist": {
     "production": [

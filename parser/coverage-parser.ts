@@ -20,6 +20,8 @@ export interface ComponentCoverage {
  * Parse Jest coverage data from coverage-summary.json
  */
 export class CoverageParser {
+  private coverageWarningShown = false;
+
   /**
    * Extract coverage data for a specific component file
    */
@@ -27,7 +29,14 @@ export class CoverageParser {
     const coverageFile = path.join(process.cwd(), 'coverage', 'coverage-summary.json');
 
     if (!fs.existsSync(coverageFile)) {
-      console.warn('⚠️  No coverage data found. Run tests with --coverage to generate coverage.');
+      if (!this.coverageWarningShown) {
+        console.warn('⚠️  Coverage is enabled but no coverage data found.');
+        console.warn('   Make sure your package.json has:');
+        console.warn('   1. A "test" script that runs Jest');
+        console.warn('   2. Jest configured with coverageReporters: ["json-summary"]');
+        console.warn('   Continuing without coverage data...\n');
+        this.coverageWarningShown = true;
+      }
       return null;
     }
 
