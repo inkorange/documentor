@@ -10,16 +10,16 @@ describe('Button (Component)', () => {
 		it("Renders a 'loading display' when its status is `pending`", () => {
 			render(<Button status="pending">{label}</Button>)
 			expect(screen.queryByRole('button', { name: label })).not.toBeInTheDocument()
-			expect(screen.getByRole('button', { name: loadingLabel })).toBeInTheDocument()
+			expect(screen.getByRole('button', { name: 'Loading... Loading...' })).toBeInTheDocument()
 		})
 
 		it('Automatically disables itself when its status is `pending` or `resolved`', () => {
 			/* -------------------- Disabled -------------------- */
 			const { rerender } = render(<Button status="pending">{label}</Button>)
-			expect(screen.getByRole('button', { name: loadingLabel })).toBeDisabled()
+			expect(screen.getByRole('button', { name: 'Loading... Loading...' })).toBeDisabled()
 
 			rerender(<Button status="resolved">{label}</Button>)
-			expect(screen.getByRole('button', { name: label })).toBeDisabled()
+			expect(screen.getByRole('button', { name: 'My Button✅' })).toBeDisabled()
 
 			/* -------------------- Enabled -------------------- */
 			rerender(<Button>{label}</Button>)
@@ -67,14 +67,14 @@ describe('Button (Component)', () => {
 					{label}
 				</Button>,
 			)
-			expect(screen.getByRole('button', { name: loadingLabel })).not.toBeDisabled()
+			expect(screen.getByRole('button', { name: 'Loading... Loading...' })).not.toBeDisabled()
 
 			rerender(
 				<Button status="resolved" disabled={false}>
 					{label}
 				</Button>,
 			)
-			expect(screen.getByRole('button', { name: label })).not.toBeDisabled()
+			expect(screen.getByRole('button', { name: 'My Button✅' })).not.toBeDisabled()
 		})
 	})
 

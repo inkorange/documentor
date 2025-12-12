@@ -81,6 +81,10 @@ function copyDirectory(src, dest) {
     if (entry.isDirectory()) {
       copyDirectory(srcPath, destPath);
     } else {
+      // Skip source map files - they're only needed for development debugging
+      if (entry.name.endsWith('.map')) {
+        continue;
+      }
       fs.copyFileSync(srcPath, destPath);
     }
   }

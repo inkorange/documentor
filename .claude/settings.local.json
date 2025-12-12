@@ -38,7 +38,9 @@
       "Bash(npm run:*)",
       "Bash(npx docspark:*)",
       "Bash(timeout 10 npx docspark:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(.husky/pre-commit:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

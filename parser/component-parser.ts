@@ -6,11 +6,13 @@ export interface PropMetadata {
   values?: string[];
   optional: boolean;
   default?: string;
+  defaultSource?: 'inferred' | 'explicit'; // How the default was determined
   description?: string;
   renderVariants?: boolean;
   displayTemplate?: string;
   hideInDocs?: boolean;
   example?: string;
+  excludedWith?: string[]; // Props that cannot be combined with this prop
 }
 
 export interface ComponentMetadata {
@@ -19,6 +21,9 @@ export interface ComponentMetadata {
   filePath: string;
   props: Record<string, PropMetadata>;
   styleFiles: string[];
+  subComponents?: string[]; // Names of sub-components (e.g., Select.Option for Select)
+  parentComponent?: string; // Name of parent component if this is a sub-component
+  compositionPattern?: string; // Description of how components compose together
 }
 
 export class ComponentParser {
@@ -56,12 +61,17 @@ export class ComponentParser {
       // Find style imports
       const styleFiles = this.findStyleImports(sourceFile);
 
+      // Detect composition patterns
+      const { subComponents, compositionPattern } = this.detectComposition(sourceFile, fileName);
+
       return {
         name: fileName,
         description,
         filePath,
         props,
         styleFiles,
+        subComponents: subComponents.length > 0 ? subComponents : undefined,
+        compositionPattern,
       };
     } catch (error) {
       console.error(`Error parsing ${filePath}:`, error);
@@ -324,22 +334,39 @@ export class ComponentParser {
       // Check if it's a union type
       const values = this.extractUnionValues(prop.getTypeNode());
 
-      // Try to find default value from component implementation
+      // Try to find default value from component implementation or JSDoc
       const componentFunc = sourceFile.getFunctions().find((f: any) => f.getName() === fileName);
       const componentVar = sourceFile.getVariableDeclaration(fileName);
       const componentNode = componentFunc || componentVar;
-      const defaultValue = this.findDefaultValue(componentNode, propName);
+
+      // Check for explicit @default tag in JSDoc first
+      let defaultValue: string | undefined;
+      let defaultSource: 'inferred' | 'explicit' | undefined;
+
+      if (tags.default) {
+        defaultValue = tags.default;
+        defaultSource = 'explicit';
+      } else {
+        // Infer from component implementation
+        const inferredDefault = this.findDefaultValue(componentNode, propName);
+        if (inferredDefault) {
+          defaultValue = inferredDefault.value;
+          defaultSource = inferredDefault.source;
+        }
+      }
 
       props[propName] = {
         type: typeText,
         values,
         optional,
         default: defaultValue,
+        defaultSource,
         description,
         renderVariants: tags.renderVariants === 'true',
         displayTemplate: tags.displayTemplate,
         hideInDocs: tags.hideInDocs === 'true',
         example: tags.example,
+        excludedWith: tags.variantExclude ? tags.variantExclude.split(/[\s,]+/).filter(Boolean) : undefined,
       };
     }
 
@@ -444,22 +471,39 @@ export class ComponentParser {
       // Check if it's a union type
       const values = this.extractUnionValues(prop.getTypeNode());
 
-      // Try to find default value from component implementation
+      // Try to find default value from component implementation or JSDoc
       const componentFunc = sourceFile.getFunctions().find((f: any) => f.getName() === fileName);
       const componentVar = sourceFile.getVariableDeclaration(fileName);
       const componentNode = componentFunc || componentVar;
-      const defaultValue = this.findDefaultValue(componentNode, propName);
+
+      // Check for explicit @default tag in JSDoc first
+      let defaultValue: string | undefined;
+      let defaultSource: 'inferred' | 'explicit' | undefined;
+
+      if (tags.default) {
+        defaultValue = tags.default;
+        defaultSource = 'explicit';
+      } else {
+        // Infer from component implementation
+        const inferredDefault = this.findDefaultValue(componentNode, propName);
+        if (inferredDefault) {
+          defaultValue = inferredDefault.value;
+          defaultSource = inferredDefault.source;
+        }
+      }
 
       props[propName] = {
         type: typeText,
         values,
         optional,
         default: defaultValue,
+        defaultSource,
         description,
         renderVariants: tags.renderVariants === 'true',
         displayTemplate: tags.displayTemplate,
         hideInDocs: tags.hideInDocs === 'true',
         example: tags.example,
+        excludedWith: tags.variantExclude ? tags.variantExclude.split(/[\s,]+/).filter(Boolean) : undefined,
       };
     }
 
@@ -595,8 +639,9 @@ export class ComponentParser {
 
   /**
    * Find default prop values in component implementation
+   * Returns both the default value and its source (inferred/explicit)
    */
-  private findDefaultValue(componentNode: any, propName: string): string | undefined {
+  private findDefaultValue(componentNode: any, propName: string): { value: string; source: 'inferred' | 'explicit' } | undefined {
     if (!componentNode) return undefined;
 
     // For variable declarations (const Component = ...), check the initializer
@@ -605,11 +650,24 @@ export class ComponentParser {
       targetNode = componentNode.getInitializer();
     }
 
+    // Handle React.memo, React.forwardRef wrappers
+    if (targetNode && targetNode.getKind() === SyntaxKind.CallExpression) {
+      const args = targetNode.getArguments?.();
+      if (args && args.length > 0) {
+        const firstArg = args[0];
+        if (firstArg.getKind() === SyntaxKind.ArrowFunction || firstArg.getKind() === SyntaxKind.FunctionExpression) {
+          targetNode = firstArg;
+        }
+      }
+    }
+
     // Get parameters from the function/arrow function
     const params = targetNode.getParameters?.() || [];
 
     for (const param of params) {
+      // Check for TypeScript default parameter: function Component({ prop = 'default' }: Props)
       const binding = param.getNameNode();
+
       if (binding && binding.getKind() === SyntaxKind.ObjectBindingPattern) {
         for (const element of binding.getElements()) {
           if (element.getName() === propName) {
@@ -617,7 +675,8 @@ export class ComponentParser {
             if (initializer) {
               const text = initializer.getText();
               // Remove quotes from string literals for cleaner display
-              return text.replace(/^['"]|['"]$/g, '');
+              const cleanValue = text.replace(/^['"]|['"]$/g, '');
+              return { value: cleanValue, source: 'inferred' };
             }
           }
         }
@@ -642,5 +701,64 @@ export class ComponentParser {
     }
 
     return styleFiles;
+  }
+
+  /**
+   * Detect component composition patterns
+   * Looks for sub-components defined as properties (e.g., Select.Option)
+   */
+  private detectComposition(sourceFile: any, componentName: string): {
+    subComponents: string[];
+    compositionPattern?: string;
+  } {
+    const subComponents: string[] = [];
+    let compositionPattern: string | undefined;
+
+    // Look for JSDoc @compositionPattern tag on the main component
+    const componentVar = sourceFile.getVariableDeclaration(componentName);
+    if (componentVar) {
+      const varStatement = componentVar.getParent()?.getParent();
+      if (varStatement) {
+        const jsDocs = varStatement.getJsDocs();
+        if (jsDocs && jsDocs.length > 0) {
+          const tags = this.parseJSDocTags(jsDocs);
+          compositionPattern = tags.compositionPattern;
+        }
+      }
+    }
+
+    // Look for sub-component assignments (e.g., Select.Option = SelectOption)
+    // Pattern: ComponentName.SubName = ...
+    const statements = sourceFile.getStatements();
+
+    for (const statement of statements) {
+      // Check for expression statements with property assignments
+      if (statement.getKind() === SyntaxKind.ExpressionStatement) {
+        const expression = statement.getExpression();
+
+        // Check if it's a binary expression (assignment)
+        if (expression && expression.getKind() === SyntaxKind.BinaryExpression) {
+          const left = expression.getLeft();
+
+          // Check if left side is a property access (Component.SubComponent)
+          if (left && left.getKind() === SyntaxKind.PropertyAccessExpression) {
+            const object = left.getExpression();
+            const property = left.getName();
+
+            // Check if the object matches our component name
+            if (object.getText() === componentName) {
+              subComponents.push(`${componentName}.${property}`);
+            }
+          }
+        }
+      }
+    }
+
+    // If no explicit pattern but we found sub-components, create a default pattern
+    if (!compositionPattern && subComponents.length > 0) {
+      compositionPattern = `Compound component with ${subComponents.length} sub-component${subComponents.length !== 1 ? 's' : ''}: ${subComponents.join(', ')}`;
+    }
+
+    return { subComponents, compositionPattern };
   }
 }
