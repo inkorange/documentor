@@ -57,7 +57,7 @@ export async function buildDocumentation(
 
       for (const [themeName, themeConfig] of themeMap.entries()) {
         try {
-          const theme = await themeParser.parseThemeFile(themeConfig.source);
+          const theme = await themeParser.parseThemeFile(themeConfig.source, themeName);
           themes.push({
             id: theme.id,
             name: theme.name,

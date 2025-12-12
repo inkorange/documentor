@@ -1,0 +1,179 @@
+/* -------------------- Global Utility Mixins -------------------- */
+
+@mixin anchor-underline($thickness: 1.5px, $offset: var(--spacing-3xs)) {
+	text-decoration: underline;
+	text-decoration-thickness: $thickness;
+	text-underline-offset: $offset;
+}
+
+/* Typography Mixins that enforce the UA design guide. For all font-based styling, we should be leveraging these. */
+@mixin h1 {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h1);
+	line-height: 1;
+	font-weight: var(--font-condensed-black);
+	letter-spacing: 2px;
+	font-style: normal;
+	font-stretch: condensed;
+	text-transform: uppercase;
+}
+
+@mixin h2 {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h2);
+	line-height: 1;
+	font-weight: var(--font-condensed-black);
+	letter-spacing: 1px;
+	font-stretch: condensed;
+	text-transform: uppercase;
+}
+
+@mixin h3-condensed {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h3);
+	line-height: 1;
+	font-weight: var(--font-condensed-black);
+	letter-spacing: 0.25px;
+	text-transform: uppercase;
+	font-stretch: condensed;
+}
+
+@mixin h3 {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h3);
+	line-height: calc(48 / 40);
+	font-weight: var(--font-bold);
+	letter-spacing: 0.25px;
+}
+
+@mixin h4-condensed($lineHeight: 1) {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h4);
+	line-height: $lineHeight;
+	font-weight: var(--font-condensed-black);
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	font-stretch: condensed;
+}
+
+@mixin h4() {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h4);
+	line-height: calc(40 / 32);
+	font-weight: var(--font-bold);
+	letter-spacing: 0.5px;
+	font-stretch: normal;
+	font-style: normal;
+}
+
+@mixin h5-condensed {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h5);
+	line-height: 1;
+	font-weight: var(--font-condensed-black);
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	font-stretch: condensed;
+}
+
+@mixin h5($weight: var(--font-bold)) {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h5);
+	line-height: calc(32 / 24);
+	font-weight: $weight;
+	letter-spacing: 0.5px;
+}
+
+@mixin h5-extended-bold() {
+	@include h5(var(--font-bold));
+	font-family: var(--font-extended), sans-serif;
+}
+
+@mixin h5-extended-black() {
+	@include h5(var(--font-condensed-black));
+	font-family: var(--font-extended), sans-serif;
+}
+
+@mixin h6($weight: var(--font-regular)) {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h6);
+	line-height: 1.5;
+	font-weight: $weight;
+	letter-spacing: 0.5px;
+}
+
+@mixin h6-large($weight: var(--font-regular)) {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-h6-large);
+	line-height: 1.5;
+	font-weight: $weight;
+	letter-spacing: 0;
+}
+
+@mixin h6-large-extended($weight: var(--font-regular)) {
+	@include h6-large($weight);
+	font-family: var(--font-extended), sans-serif;
+	letter-spacing: 0.5px;
+}
+
+@mixin h6-large-extended-bold() {
+	@include h6-large-extended(var(--font-bold));
+}
+
+@mixin h6-extended($weight: var(--font-regular)) {
+	@include h6($weight);
+	font-family: var(--font-extended), sans-serif;
+}
+
+@mixin h6-extended-bold() {
+	@include h6-extended(var(--font-bold));
+}
+
+@mixin body($weight: var(--font-regular)) {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-body);
+	line-height: 1.5;
+	font-weight: $weight;
+	letter-spacing: 0;
+}
+
+@mixin subtext($weight: var(--font-regular)) {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-subtext);
+	line-height: calc(20 / 12);
+	font-weight: $weight;
+	letter-spacing: 0;
+}
+
+@mixin subtext-bold($weight: var(--font-regular)) {
+	@include subtext(var(--font-bold));
+	font-family: var(--font-alternate), sans-serif;
+	line-height: calc(16 / 12);
+}
+
+@mixin legal($weight: var(--font-regular)) {
+	font-family: var(--font-default), sans-serif;
+	font-size: var(--font-size-legal);
+	line-height: calc(16 / 10);
+	font-weight: $weight;
+	letter-spacing: 0;
+}
+
+/* -------------------- Font Weights -------------------- */
+*:where([class*='font-']) {
+	&.font-regular {
+		font-weight: var(--font-regular);
+	}
+
+	&.font-semibold {
+		font-weight: var(--font-semibold);
+	}
+
+	&.font-bold {
+		font-weight: var(--font-bold);
+	}
+
+	&.font-condensed-black {
+		font-weight: var(--font-condensed-black);
+	}
+}

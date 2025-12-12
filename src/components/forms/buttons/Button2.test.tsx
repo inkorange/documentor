@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Button from './Button';
-import styles from './Button.module.scss';
+import Button from './Button2';
+import styles from './Button2.module.scss';
 
 describe('Button Component', () => {
   describe('Rendering', () => {

@@ -81,10 +81,9 @@ async function copyComponents() {
 async function generateComponentIndex(componentFiles) {
   const indexPath = path.join(TARGET_DIR, 'index.ts');
 
-  // Get unique component names (files without extension, excluding subdirectories for simplicity)
+  // Get unique component names (files without extension, at any depth)
   const components = componentFiles
     .filter(file => file.endsWith('.tsx') || file.endsWith('.jsx'))
-    .filter(file => !file.includes('/') || file.split('/').length === 2) // Only components in root or one level deep
     .map(file => {
       const parts = file.split('/');
       const fileName = parts[parts.length - 1];

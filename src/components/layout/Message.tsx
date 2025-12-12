@@ -7,7 +7,9 @@ import React, { forwardRef } from 'react'
 
 type MessageType = 'alert' | 'error' | 'warning' | 'text'
 interface MessageProps {
-	/** Extend the base div element's class styles */
+	/**
+	 * @hideInDocs
+	 */
 	className?: string
 	/**
 	 * Defines the type of the message component and drives the look and feel with logic to conditionally show the icon on the left based on the message type.

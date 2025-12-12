@@ -61,29 +61,35 @@ const HomePage: React.FC = () => {
       <section className="components-section">
         <h2>All Components</h2>
         <div className="components-grid">
-          {index.components.map((component) => (
-            <Link
-              key={component.name}
-              to={`/components/${component.name}`}
-              className="component-card"
-            >
-              <h3 className="card-title">{component.name}</h3>
-              {component.description && (
-                <p className="card-description">{component.description}</p>
-              )}
+          {index.components.map((component) => {
+            const truncatedDescription = component.description && component.description.length > 450
+              ? component.description.substring(0, 450) + '...'
+              : component.description;
 
-              <div className="card-footer">
-                <span className="card-stat">
-                  {component.variantCount} variant{component.variantCount !== 1 ? 's' : ''}
-                </span>
-                <span className="card-stat">
-                  {component.cssVariableCount} CSS var{component.cssVariableCount !== 1 ? 's' : ''}
-                </span>
-              </div>
+            return (
+              <Link
+                key={component.name}
+                to={`/components/${component.name}`}
+                className="component-card"
+              >
+                <h3 className="card-title">{component.name}</h3>
+                {truncatedDescription && (
+                  <p className="card-description">{truncatedDescription}</p>
+                )}
 
-              <div className="card-file-path">{component.filePath}</div>
-            </Link>
-          ))}
+                <div className="card-footer">
+                  <span className="card-stat">
+                    {component.variantCount} variant{component.variantCount !== 1 ? 's' : ''}
+                  </span>
+                  <span className="card-stat">
+                    {component.cssVariableCount} CSS var{component.cssVariableCount !== 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                <div className="card-file-path">{component.filePath}</div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

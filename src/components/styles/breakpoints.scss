@@ -1,0 +1,48 @@
+$mobileMax: 479px;
+$tabletMax: 767px;
+$desktopMax: 1023px;
+
+$tabletMin: $mobileMax + 1;
+$desktopMin: $tabletMax + 1;
+$largeDesktopMin: $desktopMax + 1;
+
+// for media queries that are tablet and larger
+@mixin bp-tablet-up {
+	@media screen and (min-width: $tabletMin) {
+		@content;
+	}
+}
+
+// For media queries that are desktop only and larger
+@mixin bp-desktop-up {
+	@media screen and (min-width: $desktopMin) {
+		@content;
+	}
+}
+
+// For media queries that are all sizes up to (small) desktop
+@mixin bp-desktop-down($print: false) {
+	@if $print {
+		@media print, screen and (max-width: $desktopMax) {
+			@content;
+		}
+	} @else {
+		@media screen and (max-width: $desktopMax) {
+			@content;
+		}
+	}
+}
+
+// For media queries that are large desktop and larger (Infinity)
+@mixin bp-large-desktop-up {
+	@media screen and (min-width: $largeDesktopMin) {
+		@content;
+	}
+}
+
+// For media queries that are for tablet only
+@mixin bp-tablet-only {
+	@media screen and (min-width: $tabletMin) and (max-width: $tabletMax) {
+		@content;
+	}
+}

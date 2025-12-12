@@ -54,7 +54,7 @@ export class ThemeParser {
   /**
    * Parse a CSS/SCSS theme file and extract tokens
    */
-  async parseThemeFile(filePath: string): Promise<Theme> {
+  async parseThemeFile(filePath: string, themeName?: string): Promise<Theme> {
     const absolutePath = path.resolve(process.cwd(), filePath);
 
     if (!fs.existsSync(absolutePath)) {
@@ -65,9 +65,12 @@ export class ThemeParser {
     const tokens = await this.extractTokensFromCSS(content);
     const metadata = this.extractMetadataFromComments(content);
 
+    // Use provided theme name from config, or fall back to filename
+    const id = themeName || path.basename(filePath, path.extname(filePath));
+
     return {
-      id: path.basename(filePath, path.extname(filePath)),
-      name: this.formatThemeName(path.basename(filePath, path.extname(filePath))),
+      id,
+      name: this.formatThemeName(id),
       filePath,
       tokens,
       metadata
