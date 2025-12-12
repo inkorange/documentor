@@ -17,9 +17,9 @@ export async function devCommand(options: DevOptions) {
     console.log(`📂 Source: ${config.source.include.join(', ')}`);
     console.log(`🌐 Port: ${port}\n`);
 
-    await startDevServer(config, port);
+    const actualPort = await startDevServer(config, port);
 
-    console.log(`✅ Server running at http://localhost:${port}`);
+    console.log(`✅ Server running at http://localhost:${actualPort}`);
     console.log('👀 Watching for file changes...\n');
   } catch (error) {
     console.error('❌ Error starting dev server:', error);

@@ -42,8 +42,50 @@ export async function serveCommand(options: ServeOptions) {
     res.sendFile(path.join(directory, 'index.html'));
   });
 
-  app.listen(port, () => {
-    console.log(`✅ Serving documentation at http://localhost:${port}`);
-    console.log(`📂 Directory: ${directory}\n`);
-  });
+  // Try to listen on the port, with automatic fallback
+  await tryListenOnPort(app, port, directory);
+}
+
+/**
+ * Try to listen on a port, automatically trying next ports if busy
+ */
+async function tryListenOnPort(app: express.Application, startPort: number, directory: string, maxAttempts: number = 10): Promise<void> {
+  let currentPort = startPort;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const server = app.listen(currentPort)
+          .on('listening', () => {
+            if (currentPort !== startPort) {
+              console.log(`⚠️  Port ${startPort} was in use, using port ${currentPort} instead\n`);
+            }
+            console.log(`✅ Serving documentation at http://localhost:${currentPort}`);
+            console.log(`📂 Directory: ${directory}\n`);
+            resolve();
+          })
+          .on('error', (err: NodeJS.ErrnoException) => {
+            if (err.code === 'EADDRINUSE') {
+              reject(err);
+            } else {
+              // For other errors, throw immediately
+              throw err;
+            }
+          });
+      });
+      // Success! Port is available
+      return;
+    } catch (err: any) {
+      if (err.code === 'EADDRINUSE' && attempt < maxAttempts - 1) {
+        // Port is in use, try next port
+        currentPort++;
+        continue;
+      } else {
+        // Either not a port-in-use error, or we've exhausted attempts
+        console.error(`❌ Failed to start server. Tried ports ${startPort}-${currentPort}.`);
+        console.error('All ports appear to be in use. Please specify a different port or free up one of these ports.');
+        process.exit(1);
+      }
+    }
+  }
 }

@@ -1,0 +1,105 @@
+.playground-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--bg-secondary, #f5f5f5);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  .mode-switcher {
+    display: flex;
+    gap: 0.5rem;
+    background: var(--bg-primary, #ffffff);
+    padding: 0.25rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .mode-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary, #666);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    .icon {
+      font-size: 1.2rem;
+    }
+
+    .label {
+      display: none;
+
+      @media (min-width: 768px) {
+        display: inline;
+      }
+    }
+
+    &:hover {
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #333);
+    }
+
+    &.active {
+      background: var(--primary-color, #0066cc);
+      color: white;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color, #ddd);
+    background: var(--bg-primary, #ffffff);
+    color: var(--text-primary, #333);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+
+    .icon {
+      font-size: 1.1rem;
+    }
+
+    .label {
+      display: none;
+
+      @media (min-width: 768px) {
+        display: inline;
+      }
+    }
+
+    &:hover {
+      border-color: var(--primary-color, #0066cc);
+      color: var(--primary-color, #0066cc);
+      background: var(--bg-hover, #f0f0f0);
+    }
+
+    &.reset-button:hover {
+      border-color: var(--warning-color, #ff9800);
+      color: var(--warning-color, #ff9800);
+    }
+
+    &.export-button:hover {
+      border-color: var(--success-color, #4caf50);
+      color: var(--success-color, #4caf50);
+    }
+  }
+}

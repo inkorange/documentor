@@ -1,0 +1,104 @@
+.code-editor {
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 8px;
+  overflow: hidden;
+
+  .code-editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--bg-secondary, #f5f5f5);
+    border-bottom: 1px solid var(--border-color, #ddd);
+
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary, #333);
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 0.5rem;
+
+      button {
+        padding: 0.4rem 0.8rem;
+        border: 1px solid var(--border-color, #ddd);
+        background: var(--bg-primary, #ffffff);
+        color: var(--text-primary, #333);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: var(--primary-color, #0066cc);
+          color: var(--primary-color, #0066cc);
+        }
+
+        &.apply-btn {
+          background: var(--primary-color, #0066cc);
+          color: white;
+          border-color: var(--primary-color, #0066cc);
+
+          &:hover {
+            background: var(--primary-dark, #0052a3);
+          }
+        }
+      }
+    }
+  }
+
+  .code-editor-body {
+    position: relative;
+
+    .code-textarea {
+      width: 100%;
+      min-height: 300px;
+      padding: 1rem;
+      border: none;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+
+      &::selection {
+        background: #264f78;
+      }
+    }
+  }
+
+  .code-editor-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #fff3e0;
+    border-top: 1px solid #ffb74d;
+    color: #e65100;
+
+    .error-icon {
+      font-size: 1.2rem;
+    }
+
+    .error-message {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+  }
+
+  .code-editor-hint {
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary, #f5f5f5);
+    border-top: 1px solid var(--border-color, #ddd);
+    font-size: 0.85rem;
+    color: var(--text-secondary, #666);
+    text-align: center;
+  }
+}

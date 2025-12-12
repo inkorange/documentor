@@ -28,6 +28,9 @@
 # built template for npm distribution
 /template
 
+# tgz
+.tgz
+
 # misc
 .DS_Store
 .env.local
