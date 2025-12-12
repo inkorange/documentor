@@ -31,7 +31,10 @@
       "Bash(git check-ignore:*)",
       "Bash(npm view:*)",
       "Bash(npm pack:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(pkill:*)",
+      "Bash(timeout 10 node:*)",
+      "Bash(git add:*)"
     ]
   }
 }

@@ -109,193 +109,53 @@ Create `docspark.config.json` in your project root:
 
 ### Full Configuration Options
 
-```json
-{
-  "name": "My Component Library",
-  "description": "Beautiful, accessible React components",
-  "version": "1.0.0",
+For a comprehensive guide to all configuration options, including detailed explanations, types, defaults, and examples, see **[Configuration Documentation](https://github.com/inkorange/docspark/CONFIGURATION.md)** for a detailed reference of all options.
 
-  "source": {
-    "include": [
-      "src/components/**/*.{tsx,jsx}"
-    ],
-    "exclude": [
-      "**/*.test.{tsx,jsx}",
-      "**/*.stories.{tsx,jsx}"
-    ],
-    "styleFiles": [".css", ".scss", ".module.css", ".module.scss"]
-  },
-
-  "output": {
-    "directory": "./docs",
-    "baseUrl": "/"
-  },
-
-  "server": {
-    "port": 8080
-  },
-
-  "variants": {
-    "autoGenerate": true,
-    "maxPermutations": 20,
-    "defaultValues": {
-      "string": "Example text",
-      "number": 42,
-      "children": "Button Text"
-    }
-  },
-
-  "theme": {
-    "tokens": [
-      {
-        "Light": {
-          "source": "src/themes/light.css",
-          "background": "#FFFFFF"
-        }
-      },
-      {
-        "Dark": {
-          "source": "src/themes/dark.css",
-          "background": "#000000"
-        }
-      }
-    ],
-    "defaultTheme": "Light",
-    "primaryColor": "#0066cc"
-  },
-
-  "coverage": {
-    "enabled": false,
-    "thresholds": {
-      "statements": 80,
-      "branches": 80,
-      "functions": 80,
-      "lines": 80
-    }
-  },
-
-  "features": {
-    "search": true,
-    "darkMode": true,
-    "codeSnippets": true,
-    "playground": false,
-    "testCoverage": true
-  }
-}
-```
+Quick overview of available configuration sections:
+- **Basic** - Project name, description, version
+- **Source** - Component file patterns, exclusions, style files
+- **Output** - Build directory, base URL, static assets
+- **Server** - Port, auto-open browser
+- **Variants** - Auto-generation settings, default values
+- **Theme** - Multi-theme support, colors, logo, favicon
+- **Coverage** - Test coverage tracking and thresholds (requires test runner setup)
+- **Features** - Enable/disable search, dark mode, playground, etc.
 
 ---
 
 ## Writing Documentable Components
 
-DocSpark works with your existing TypeScript components. Use JSDoc tags to control documentation behavior:
+For a comprehensive guide on writing components that work with DocSpark, including JSDoc tags, prop documentation, and CSS variables, see:
 
-### Basic Component
+**[DOCUMENTING.md](./DOCUMENTING.md)** - Complete component documentation guide
+
+Quick overview of JSDoc tags:
+- `@renderVariants true` - Generate examples for each prop value
+- `@displayTemplate {prop} Text` - Customize variant titles
+- `@hideInDocs` - Hide internal props from documentation
+- `@example "value"` - Provide example values for props
+- Standard tags: `@deprecated`, `@default`
+
+### Quick Example
 
 ```typescript
-// src/components/Button.tsx
-import React from 'react';
-import styles from './Button.module.scss';
-
-export type ButtonVariant = 'primary' | 'secondary' | 'outline';
-
 export interface ButtonProps {
   /**
-   * Controls the visual style of the button
+   * Visual style variant
    * @renderVariants true
    * @displayTemplate {variant} Button
    */
-  variant?: ButtonVariant;
+  variant?: 'primary' | 'secondary' | 'outline';
 
-  /** Button label text */
+  /**
+   * Button label text
+   * @example "Click Me"
+   */
   children: React.ReactNode;
 }
-
-/**
- * Button component that supports multiple variants
- */
-const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
-  children
-}) => {
-  return <button className={styles[variant]}>{children}</button>;
-};
-
-export default Button;
 ```
 
-**Result**: DocSpark generates 3 variants with titles "Primary Button", "Secondary Button", "Outline Button"
-
-### JSDoc Tags
-
-DocSpark uses industry-standard JSDoc tags to control documentation generation:
-
-#### `@renderVariants`
-Generate all variants for this prop:
-```typescript
-/**
- * Size of the button
- * @renderVariants true
- */
-size?: 'small' | 'medium' | 'large';
-```
-
-#### `@displayTemplate`
-Customize variant titles:
-```typescript
-/**
- * @renderVariants true
- * @displayTemplate {size} {variant} Button
- */
-size?: 'small' | 'medium' | 'large';
-```
-
-Generates titles like "Small Primary Button", "Large Secondary Button"
-
-#### `@hideInDocs`
-Hide internal props:
-```typescript
-/**
- * Internal test ID
- * @hideInDocs
- */
-_testId?: string;
-```
-
-#### `@example`
-Override default values:
-```typescript
-/**
- * Button label
- * @example "Click Me!"
- */
-label?: string;
-```
-
-### CSS Variables
-
-Document theme tokens in your stylesheets:
-
-```scss
-// Button.module.scss
-
-/**
- * CSS Variables:
- * --button-primary-bg: Primary button background color
- * --button-primary-text: Primary button text color
- * --button-border-radius: Button corner radius
- */
-
-.button {
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--button-border-radius, 0.375rem);
-}
-
-.primary {
-  background-color: var(--button-primary-bg, #0066cc);
-  color: var(--button-primary-text, #ffffff);
-}
-```
+See the **[JSDoc Tags Documentation](https://github.com/inkorange/docspark/DOCUMENTING.md)** for complete examples and best practices for getting the most out of Docspark.
 
 ---
 

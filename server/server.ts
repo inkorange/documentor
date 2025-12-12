@@ -4,7 +4,7 @@ import { DocSparkConfig } from '../config/schema';
 import { buildDocumentation } from '../generator/builder';
 import { watchFiles } from './watcher';
 
-export async function startDevServer(config: DocSparkConfig, port: number): Promise<void> {
+export async function startDevServer(config: DocSparkConfig, port: number): Promise<number> {
   const app = express();
 
   // Initial build
@@ -44,5 +44,53 @@ export async function startDevServer(config: DocSparkConfig, port: number): Prom
     console.log('✅ Rebuild complete\n');
   });
 
-  app.listen(port);
+  // Try to listen on the port, with automatic fallback
+  const actualPort = await tryListenOnPort(app, port);
+  return actualPort;
+}
+
+/**
+ * Try to listen on a port, automatically trying next ports if busy
+ */
+async function tryListenOnPort(app: express.Application, startPort: number, maxAttempts: number = 10): Promise<number> {
+  let currentPort = startPort;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const server = app.listen(currentPort)
+          .on('listening', () => {
+            if (currentPort !== startPort) {
+              console.log(`⚠️  Port ${startPort} was in use, using port ${currentPort} instead`);
+            }
+            resolve();
+          })
+          .on('error', (err: NodeJS.ErrnoException) => {
+            if (err.code === 'EADDRINUSE') {
+              reject(err);
+            } else {
+              // For other errors, throw immediately
+              throw err;
+            }
+          });
+      });
+      // Success! Port is available
+      return currentPort;
+    } catch (err: any) {
+      if (err.code === 'EADDRINUSE' && attempt < maxAttempts - 1) {
+        // Port is in use, try next port
+        currentPort++;
+        continue;
+      } else {
+        // Either not a port-in-use error, or we've exhausted attempts
+        throw new Error(
+          `Failed to start server. Tried ports ${startPort}-${currentPort}. ` +
+          `All ports appear to be in use. Please specify a different port or free up one of these ports.`
+        );
+      }
+    }
+  }
+
+  // This should never be reached, but TypeScript requires a return
+  throw new Error('Failed to start server after all attempts');
 }
