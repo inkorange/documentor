@@ -9,7 +9,10 @@
     "skipLibCheck": true,
     "strict": true,
     "outDir": "./dist",
-    "rootDir": "."
+    "rootDir": ".",
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true
   },
   "include": [
     "cli/**/*",

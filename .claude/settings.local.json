@@ -29,7 +29,9 @@
       "Bash(ls:*)",
       "Bash(npx changeset:*)",
       "Bash(git check-ignore:*)",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "Bash(npm pack:*)",
+      "Bash(kill:*)"
     ]
   }
 }

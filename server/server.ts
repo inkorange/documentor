@@ -17,7 +17,9 @@ export async function startDevServer(config: DocSparkConfig, port: number): Prom
   app.use('/api/metadata', express.static(path.join(outputDir, 'metadata')));
 
   // Serve static files from the website build
-  const websitePath = path.join(__dirname, '../website/build');
+  // In development: website/build directory in project root
+  // This is only used for dev server, not production builds
+  const websitePath = path.join(process.cwd(), 'website/build');
   if (require('fs').existsSync(websitePath)) {
     app.use(express.static(websitePath));
   }

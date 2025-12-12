@@ -149,16 +149,19 @@ export async function buildDocumentation(
         console.log(`  ✨ Generated ${variants.length} variants`);
       }
 
-      // Extract coverage data
-      const coverage = coverageParser.extractComponentCoverage(file);
-      if (coverage && verbose) {
-        const avgCoverage = (
-          coverage.metrics.statements.percentage +
-          coverage.metrics.branches.percentage +
-          coverage.metrics.functions.percentage +
-          coverage.metrics.lines.percentage
-        ) / 4;
-        console.log(`  📊 Coverage: ${avgCoverage.toFixed(1)}% (${coverage.hasTests ? 'has tests' : 'no tests'})`);
+      // Extract coverage data (only if explicitly enabled in config)
+      let coverage = null;
+      if (config.coverage?.enabled === true) {
+        coverage = coverageParser.extractComponentCoverage(file);
+        if (coverage && verbose) {
+          const avgCoverage = (
+            coverage.metrics.statements.percentage +
+            coverage.metrics.branches.percentage +
+            coverage.metrics.functions.percentage +
+            coverage.metrics.lines.percentage
+          ) / 4;
+          console.log(`  📊 Coverage: ${avgCoverage.toFixed(1)}% (${coverage.hasTests ? 'has tests' : 'no tests'})`);
+        }
       }
 
       const documentation: ComponentDocumentation = {
