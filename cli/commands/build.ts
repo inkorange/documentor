@@ -50,7 +50,7 @@ export async function buildCommand(options: BuildOptions) {
     console.log(`📊 Total variants: ${result.variantCount}`);
     console.log(`🎨 CSS variables: ${result.cssVariableCount}`);
     console.log(`\n📂 Output: ${path.resolve(outputDir)}`);
-    console.log(`💡 Run "documentor serve" to preview your documentation`);
+    console.log(`💡 Run "docspark serve" to preview your documentation`);
   } catch (error) {
     console.error('❌ Build failed:', error);
     process.exit(1);

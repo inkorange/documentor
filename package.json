@@ -1,5 +1,5 @@
 {
-  "name": "documentor",
+  "name": "docspark",
   "version": "0.1.0",
   "description": "Automatic documentation generator for React components with live previews and variant showcases",
   "keywords": [
@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/documentor"
+    "url": "https://github.com/inkorange/docspark"
   },
   "files": [
     "bin/",
@@ -42,7 +42,7 @@
     "zod": "^4.1.13"
   },
   "bin": {
-    "documentor": "./bin/documentor.js"
+    "docspark": "./bin/docspark.js"
   },
   "scripts": {
     "start": "cd website && BROWSER=none PORT=3000 react-scripts start",
@@ -54,10 +54,14 @@
     "prepublishOnly": "npm run build:template",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "documentor": "node ./bin/documentor.js",
-    "docs:dev": "npm run docs:build && npm run build:website && npm run copy-docs-assets && node ./bin/documentor.js dev",
-    "docs:build": "node ./bin/documentor.js build --verbose",
-    "docs:serve": "node ./bin/documentor.js serve"
+    "docspark": "node ./bin/docspark.js",
+    "docs:dev": "npm run docs:build && npm run build:website && npm run copy-docs-assets && node ./bin/docspark.js dev",
+    "docs:build": "node ./bin/docspark.js build --verbose",
+    "docs:serve": "node ./bin/docspark.js serve",
+    "changeset": "changeset",
+    "changeset:add": "changeset add",
+    "version": "changeset version",
+    "release": "npm run build:template && changeset publish"
   },
   "eslintConfig": {
     "extends": [

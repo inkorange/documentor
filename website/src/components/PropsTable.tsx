@@ -94,7 +94,7 @@ const PropsTable: React.FC<PropsTableProps> = ({
         value={currentValue ?? ''}
         onChange={(e) => handleValueChange(propName, e.target.value)}
         className="value-input value-input--text"
-        placeholder={metadata.exampleValue || `Enter ${propName}`}
+        placeholder={metadata.example || `Enter ${propName}`}
       />
     );
   };

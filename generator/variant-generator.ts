@@ -117,9 +117,9 @@ export class VariantGenerator {
    * Get a sensible default value for a prop
    */
   private getDefaultValue(propName: string, metadata: PropMetadata): any {
-    // Use exampleValue from JSDoc if provided
-    if (metadata.exampleValue) {
-      return this.parseExampleValue(metadata.exampleValue);
+    // Use example from JSDoc @example tag if provided
+    if (metadata.example) {
+      return this.parseExampleValue(metadata.example);
     }
 
     // Use default value from component if available

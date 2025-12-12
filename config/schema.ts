@@ -1,9 +1,9 @@
 /**
- * Configuration schema for Documentor
+ * Configuration schema for DocSpark
  * This defines the TypeScript types for configuration
  */
 
-export interface DocumentorConfig {
+export interface DocSparkConfig {
   name: string;
   description?: string;
   version?: string;
