@@ -1,7 +1,7 @@
 import chokidar from 'chokidar';
-import { DocumentorConfig } from '../config/schema';
+import { DocSparkConfig } from '../config/schema';
 
-export function watchFiles(config: DocumentorConfig, onChange: () => void): void {
+export function watchFiles(config: DocSparkConfig, onChange: () => void): void {
   const patterns = [...config.source.include];
 
   // Add style file patterns

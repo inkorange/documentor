@@ -66,7 +66,7 @@ export interface DocSparkConfig {
   };
 }
 
-export const defaultConfig: Partial<DocumentorConfig> = {
+export const defaultConfig: Partial<DocSparkConfig> = {
   source: {
     include: ['src/components/**/*.{tsx,jsx}'],
     exclude: ['**/*.test.{tsx,jsx}', '**/*.stories.{tsx,jsx}'],
