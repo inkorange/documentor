@@ -41,8 +41,14 @@ async function copyComponents() {
       fs.mkdirSync(targetDir, { recursive: true });
     }
 
-    // Copy file
-    fs.copyFileSync(sourcePath, targetPath);
+    // Read file content and strip 'use client' directive
+    let content = fs.readFileSync(sourcePath, 'utf-8');
+
+    // Remove 'use client' or "use client" directives (Next.js/RSC)
+    content = content.replace(/^['"]use client['"];?\s*\n/m, '');
+
+    // Write processed content
+    fs.writeFileSync(targetPath, content, 'utf-8');
     console.log(`  ✓ Copied ${file}`);
     copiedCount++;
   }

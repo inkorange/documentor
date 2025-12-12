@@ -8,7 +8,6 @@ import { copyTemplateToOutput } from '../utils/template-copier';
 export interface BuildOptions {
   config: string;
   baseUrl?: string;
-  clean?: boolean;
   verbose?: boolean;
 }
 
@@ -77,16 +76,14 @@ export async function buildCommand(options: BuildOptions) {
 
     const outputDir = config.output.directory;
 
-    // Clean output directory if requested
-    if (options.clean && fs.existsSync(outputDir)) {
+    // Always clean output directory before building to prevent old artifacts from accumulating
+    if (fs.existsSync(outputDir)) {
       console.log(`🧹 Cleaning ${outputDir}...`);
       fs.rmSync(outputDir, { recursive: true });
     }
 
     // Create output directory
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
-    }
+    fs.mkdirSync(outputDir, { recursive: true });
 
     console.log(`📖 Project: ${config.name}`);
     console.log(`📂 Source: ${config.source.include.join(', ')}`);
