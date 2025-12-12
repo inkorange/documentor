@@ -1,8 +1,8 @@
-# Documentor
+# DocSpark
 
 **Simple, automatic component documentation for React**
 
-Documentor automatically generates beautiful, interactive documentation for your React components. Just add a simple config file and a few JSDoc annotations, then generate a complete documentation site—no story files, no complex setup required.
+DocSpark automatically generates beautiful, interactive documentation for your React components. Just add a simple config file and a few JSDoc tags, then generate a complete documentation site—no story files, no complex setup required.
 
 🚀 **Simpler than Storybook** • 📦 **Works with existing components** • ⚡ **Minimal configuration**
 
@@ -24,7 +24,7 @@ Documentor automatically generates beautiful, interactive documentation for your
 
 ### 1. Create Configuration
 
-Create `documentor.config.json` in your project root:
+Create `docspark.config.json` in your project root:
 
 ```json
 {
@@ -40,9 +40,9 @@ Create `documentor.config.json` in your project root:
 }
 ```
 
-### 2. Add JSDoc Annotations
+### 2. Add JSDoc Tags
 
-Add `@renderVariants` to props you want to document:
+Add the `@renderVariants` JSDoc tag to props you want to document:
 
 ```typescript
 export interface ButtonProps {
@@ -58,11 +58,11 @@ export interface ButtonProps {
 ### 3. Generate Documentation
 
 ```bash
-npx documentor@latest build
+npx docspark@latest build
 ```
 
-Documentor will:
-1. Parse your TypeScript components and JSDoc annotations
+DocSpark will:
+1. Parse your TypeScript components and JSDoc tags
 2. Generate all component variants automatically
 3. Create a complete static website in `./docs`
 4. Ready to deploy or preview locally
@@ -70,7 +70,7 @@ Documentor will:
 ### Preview Locally
 
 ```bash
-npx documentor serve
+npx docspark serve
 ```
 
 Open http://localhost:8080 to view your documentation.
@@ -79,7 +79,7 @@ Open http://localhost:8080 to view your documentation.
 
 ## Configuration
 
-Create `documentor.config.json` in your project root:
+Create `docspark.config.json` in your project root:
 
 ```json
 {
@@ -179,7 +179,7 @@ Create `documentor.config.json` in your project root:
 
 ## Writing Documentable Components
 
-Documentor works with your existing TypeScript components. Use JSDoc annotations to control documentation behavior:
+DocSpark works with your existing TypeScript components. Use JSDoc tags to control documentation behavior:
 
 ### Basic Component
 
@@ -215,9 +215,11 @@ const Button: React.FC<ButtonProps> = ({
 export default Button;
 ```
 
-**Result**: Documentor generates 3 variants with titles "Primary Button", "Secondary Button", "Outline Button"
+**Result**: DocSpark generates 3 variants with titles "Primary Button", "Secondary Button", "Outline Button"
 
-### JSDoc Annotations
+### JSDoc Tags
+
+DocSpark uses industry-standard JSDoc tags to control documentation generation:
 
 #### `@renderVariants`
 Generate all variants for this prop:
@@ -251,12 +253,12 @@ Hide internal props:
 _testId?: string;
 ```
 
-#### `@exampleValue`
+#### `@example`
 Override default values:
 ```typescript
 /**
  * Button label
- * @exampleValue "Click Me!"
+ * @example "Click Me!"
  */
 label?: string;
 ```
@@ -295,11 +297,11 @@ Document theme tokens in your stylesheets:
 Generate static documentation site:
 
 ```bash
-npx documentor build [options]
+npx docspark build [options]
 ```
 
 **Options:**
-- `-c, --config <path>` - Config file path (default: `./documentor.config.json`)
+- `-c, --config <path>` - Config file path (default: `./docspark.config.json`)
 - `--base-url <url>` - Base URL for deployment (default: `/`)
 - `--clean` - Clean output directory first
 - `--verbose` - Detailed build output
@@ -307,13 +309,13 @@ npx documentor build [options]
 **Examples:**
 ```bash
 # Basic build
-npx documentor build
+npx docspark build
 
 # Custom config and base URL
-npx documentor build --config ./config/docs.json --base-url /components/
+npx docspark build --config ./config/docs.json --base-url /components/
 
 # Verbose output with clean
-npx documentor build --verbose --clean
+npx docspark build --verbose --clean
 ```
 
 **Output:**
@@ -337,7 +339,7 @@ npx documentor build --verbose --clean
 Preview documentation locally:
 
 ```bash
-npx documentor serve [options]
+npx docspark serve [options]
 ```
 
 **Options:**
@@ -347,10 +349,10 @@ npx documentor serve [options]
 **Example:**
 ```bash
 # Serve on default port
-npx documentor serve
+npx docspark serve
 
 # Custom port
-npx documentor serve --port 3000
+npx docspark serve --port 3000
 ```
 
 ### `dev`
@@ -358,7 +360,7 @@ npx documentor serve --port 3000
 Development mode with file watching:
 
 ```bash
-npx documentor dev [options]
+npx docspark dev [options]
 ```
 
 **Options:**
@@ -371,7 +373,7 @@ Watches source files and rebuilds on changes.
 
 ## Deployment
 
-Documentor generates a static site that can be deployed anywhere:
+DocSpark generates a static site that can be deployed anywhere:
 
 ### GitHub Pages
 
@@ -398,7 +400,7 @@ jobs:
         run: npm install
 
       - name: Build documentation
-        run: npx documentor build --base-url /my-repo/
+        run: npx docspark build --base-url /my-repo/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -412,7 +414,7 @@ jobs:
 ```toml
 # netlify.toml
 [build]
-  command = "npx documentor build"
+  command = "npx docspark build"
   publish = "docs"
 ```
 
@@ -420,7 +422,7 @@ jobs:
 
 ```json
 {
-  "buildCommand": "npx documentor build",
+  "buildCommand": "npx docspark build",
   "outputDirectory": "docs"
 }
 ```
@@ -434,9 +436,9 @@ Add to your `package.json`:
 ```json
 {
   "scripts": {
-    "docs:build": "documentor build --verbose",
-    "docs:serve": "documentor serve",
-    "docs:dev": "documentor dev"
+    "docs:build": "docspark build --verbose",
+    "docs:serve": "docspark serve",
+    "docs:dev": "docspark dev"
   }
 }
 ```
@@ -451,7 +453,7 @@ npm run docs:serve
 
 ## Example Output
 
-Running `npx documentor build`:
+Running `npx docspark build`:
 
 ```
 📦 Building documentation...
@@ -488,28 +490,28 @@ Running `npx documentor build`:
 🎨 CSS variables: 65
 
 📂 Output: /path/to/your/project/docs
-💡 Run "documentor serve" to preview your documentation
+💡 Run "docspark serve" to preview your documentation
 ```
 
 ---
 
-## Why Documentor?
+## Why DocSpark?
 
 ### vs Storybook
 
-| Feature | Documentor | Storybook |
+| Feature | DocSpark | Storybook |
 |---------|-----------|-----------|
 | Setup time | 2-5 minutes (simple config) | 15-30 minutes |
 | Story files | Not needed | Required for every component |
 | Build time | ~2 seconds | ~30+ seconds |
 | Output | Static HTML (deploy anywhere) | Requires server |
-| Variant generation | Automatic from types + JSDoc | Manual stories |
+| Variant generation | Automatic from types + JSDoc tags | Manual stories |
 | Theme tokens | Built-in support | Requires addons |
-| Learning curve | Minimal (JSDoc annotations) | Steep |
+| Learning curve | Minimal (JSDoc tags) | Steep |
 
 ### vs React Docgen
 
-| Feature | Documentor | React Docgen |
+| Feature | DocSpark | React Docgen |
 |---------|-----------|--------------|
 | Complete site | ✅ Ready to deploy | ❌ Just JSON |
 | UI | ✅ Beautiful React app | ❌ DIY |
@@ -560,7 +562,7 @@ Running `npx documentor build`:
 
 ## Contributing
 
-Contributions welcome! See the [GitHub repository](https://github.com/yourusername/documentor) for details.
+Contributions welcome! See the [GitHub repository](https://github.com/yourusername/docspark) for details.
 
 ---
 
@@ -572,6 +574,6 @@ MIT © 2024
 
 ## Support
 
-- 📖 [Documentation](https://github.com/inkorange/documentor)
-- 🐛 [Report Issues](https://github.com/inkorange/documentor/issues)
-- 💬 [Discussions](https://github.com/inkorange/documentor/discussions)
+- 📖 [Documentation](https://github.com/inkorange/docspark)
+- 🐛 [Report Issues](https://github.com/inkorange/docspark/issues)
+- 💬 [Discussions](https://github.com/inkorange/docspark/discussions)

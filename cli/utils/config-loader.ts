@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { DocumentorConfig, defaultConfig } from '../../config/schema';
-import { DocumentorConfigSchema, formatValidationError } from '../../config/validation';
+import { DocSparkConfig, defaultConfig } from '../../config/schema';
+import { DocSparkConfigSchema, formatValidationError } from '../../config/validation';
 import { ZodError } from 'zod';
 
-export async function loadConfig(configPath: string): Promise<DocumentorConfig> {
+export async function loadConfig(configPath: string): Promise<DocSparkConfig> {
   const resolvedPath = path.resolve(configPath);
 
   if (!fs.existsSync(resolvedPath)) {
@@ -13,7 +13,7 @@ export async function loadConfig(configPath: string): Promise<DocumentorConfig> 
     return {
       name: 'Component Library',
       ...defaultConfig,
-    } as DocumentorConfig;
+    } as DocSparkConfig;
   }
 
   try {
@@ -48,9 +48,9 @@ export async function loadConfig(configPath: string): Promise<DocumentorConfig> 
 
     // Validate configuration with Zod
     try {
-      const validatedConfig = DocumentorConfigSchema.parse(mergedConfig);
+      const validatedConfig = DocSparkConfigSchema.parse(mergedConfig);
       console.log('✅ Configuration validated successfully\n');
-      return validatedConfig as unknown as DocumentorConfig;
+      return validatedConfig as unknown as DocSparkConfig;
     } catch (validationError) {
       if (validationError instanceof ZodError) {
         const errorMessage = formatValidationError(validationError);

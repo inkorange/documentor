@@ -225,7 +225,7 @@ const FeaturesSchema = z.object({
  * Main configuration schema
  * All fields are validated according to their type and constraints
  */
-export const DocumentorConfigSchema = z.object({
+export const DocSparkConfigSchema = z.object({
   /**
    * Project name
    * Displayed in documentation header
@@ -259,7 +259,7 @@ export const DocumentorConfigSchema = z.object({
 /**
  * Infer TypeScript type from Zod schema
  */
-export type DocumentorConfig = z.infer<typeof DocumentorConfigSchema>;
+export type DocSparkConfig = z.infer<typeof DocSparkConfigSchema>;
 
 /**
  * Format Zod validation errors into human-readable messages

@@ -1,9 +1,9 @@
 /**
- * Configuration schema for Documentor
+ * Configuration schema for DocSpark
  * This defines the TypeScript types for configuration
  */
 
-export interface DocumentorConfig {
+export interface DocSparkConfig {
   name: string;
   description?: string;
   version?: string;
@@ -66,7 +66,7 @@ export interface DocumentorConfig {
   };
 }
 
-export const defaultConfig: Partial<DocumentorConfig> = {
+export const defaultConfig: Partial<DocSparkConfig> = {
   source: {
     include: ['src/components/**/*.{tsx,jsx}'],
     exclude: ['**/*.test.{tsx,jsx}', '**/*.stories.{tsx,jsx}'],

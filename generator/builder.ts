@@ -4,7 +4,7 @@ import { StyleParser } from '../parser/style-parser';
 import { CoverageParser } from '../parser/coverage-parser';
 import { ThemeParser } from '../parser/theme-parser';
 import { VariantGenerator } from './variant-generator';
-import { DocumentorConfig } from '../config/schema';
+import { DocSparkConfig } from '../config/schema';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -22,7 +22,7 @@ export interface ComponentDocumentation {
 }
 
 export async function buildDocumentation(
-  config: DocumentorConfig,
+  config: DocSparkConfig,
   verbose: boolean = false
 ): Promise<BuildResult> {
   const componentParser = new ComponentParser();

@@ -91,9 +91,7 @@ const LivePreview: React.FC<LivePreviewProps> = ({
   try {
     return (
       <div className="live-preview-wrapper">
-        <div className="live-preview-content">
-          <Component {...processedProps} />
-        </div>
+        <Component {...processedProps} />
       </div>
     );
   } catch (err) {

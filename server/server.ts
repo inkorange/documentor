@@ -1,10 +1,10 @@
 import express from 'express';
 import * as path from 'path';
-import { DocumentorConfig } from '../config/schema';
+import { DocSparkConfig } from '../config/schema';
 import { buildDocumentation } from '../generator/builder';
 import { watchFiles } from './watcher';
 
-export async function startDevServer(config: DocumentorConfig, port: number): Promise<void> {
+export async function startDevServer(config: DocSparkConfig, port: number): Promise<void> {
   const app = express();
 
   // Initial build

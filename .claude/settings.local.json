@@ -21,7 +21,14 @@
       "Bash(npm run copy-components:*)",
       "Bash(npx tsc:*)",
       "Bash(curl:*)",
-      "Bash(timeout 10 npm run docs:serve)"
+      "Bash(timeout 10 npm run docs:serve)",
+      "Bash(npm run build:*)",
+      "Bash(npm run build:cli:*)",
+      "Bash(find:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(ls:*)",
+      "Bash(npx changeset:*)",
+      "Bash(git check-ignore:*)"
     ]
   }
 }

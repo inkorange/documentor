@@ -1,13 +1,6 @@
 .live-preview-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.live-preview-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  // No default centering - let components handle their own layout
+  width: 100%;
 }
 
 .live-preview-placeholder {

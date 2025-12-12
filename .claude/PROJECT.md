@@ -227,7 +227,7 @@ Responsible for extracting component metadata from source files.
 - Reads special JSDoc tags for automation hints:
   - `@renderVariants` - Auto-generate all variant combinations
   - `@variantProp` - Specify which prop drives variants
-  - `@exampleValue` - Override example values for props
+  - `@example` - Override example values for props (standard JSDoc tag)
   - `@hideInDocs` - Exclude internal props from documentation
 
 #### 3. **Variant Generator**
@@ -699,7 +699,7 @@ export interface ButtonProps {
   /**
    * Button size
    * @renderVariants true
-   * @exampleValue "medium"
+   * @example "medium"
    */
   size?: 'small' | 'medium' | 'large';
 
@@ -711,7 +711,7 @@ export interface ButtonProps {
 
   /**
    * Click handler
-   * @exampleValue () => alert('Clicked!')
+   * @example () => alert('Clicked!')
    */
   onClick?: () => void;
 }
@@ -1466,7 +1466,7 @@ function PropTextInput({ propName, propMeta, currentValue, onChange }) {
       type="text"
       value={localValue}
       onChange={handleChange}
-      placeholder={propMeta.exampleValue || propMeta.default || 'Enter value'}
+      placeholder={propMeta.example || propMeta.default || 'Enter value'}
       className="prop-control-text"
     />
   );
@@ -4832,7 +4832,7 @@ The variant examples will display under the Properties table as they do already 
 
 **Goal**: Set up automated npm publishing workflow with version management, changelog generation, and GitHub Actions integration for seamless releases.
 
-**Status**: Planned
+**Status**: ✅ Completed
 
 #### Overview
 
@@ -4849,11 +4849,11 @@ This phase establishes a professional release workflow using Changesets for sema
 **Goal**: Install and configure Changesets for version management
 
 **Tasks**:
-- [ ] Install `@changesets/cli` as dev dependency
-- [ ] Run `npx changeset init` to create `.changeset/` directory
-- [ ] Configure `.changeset/config.json` with project settings
-- [ ] Add npm scripts for changeset workflow
-- [ ] Document changeset workflow for contributors
+- [x] Install `@changesets/cli` as dev dependency
+- [x] Run `npx changeset init` to create `.changeset/` directory
+- [x] Configure `.changeset/config.json` with project settings
+- [x] Add npm scripts for changeset workflow
+- [x] Document changeset workflow for contributors
 
 **Configuration**:
 
@@ -4896,12 +4896,12 @@ This phase establishes a professional release workflow using Changesets for sema
 **Goal**: Create automated testing and validation workflow
 
 **Tasks**:
-- [ ] Create `.github/workflows/ci.yml`
-- [ ] Run TypeScript type checking
-- [ ] Run tests (if applicable)
-- [ ] Validate configuration schema
-- [ ] Build template to ensure it compiles
-- [ ] Run on all PRs and commits to main
+- [x] Create `.github/workflows/ci.yml`
+- [x] Run TypeScript type checking
+- [x] Run tests (if applicable)
+- [x] Validate configuration schema
+- [x] Build template to ensure it compiles
+- [x] Run on all PRs and commits to main
 
 **CI Workflow**:
 
@@ -4953,12 +4953,12 @@ jobs:
 **Goal**: Automate version bump PRs and npm publishing
 
 **Tasks**:
-- [ ] Create `.github/workflows/release.yml`
-- [ ] Set up Changesets bot for automated version PRs
-- [ ] Configure npm authentication with NPM_TOKEN
-- [ ] Publish to npm on merge to main
-- [ ] Create GitHub releases with changelog
-- [ ] Add release tags
+- [x] Create `.github/workflows/release.yml`
+- [x] Set up Changesets bot for automated version PRs
+- [x] Configure npm authentication with NPM_TOKEN
+- [x] Publish to npm on merge to main
+- [x] Create GitHub releases with changelog
+- [x] Add release tags
 
 **Release Workflow**:
 

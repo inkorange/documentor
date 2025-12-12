@@ -10,7 +10,7 @@ const path = require('path');
 const cliPath = path.join(__dirname, '../cli/index.ts');
 
 try {
-  execSync(`npx ts-node --project tsconfig.cli.json ${cliPath} ${process.argv.slice(2).join(' ')}`, {
+  execSync(`npx ts-node --transpile-only --project tsconfig.cli.json ${cliPath} ${process.argv.slice(2).join(' ')}`, {
     stdio: 'inherit',
     cwd: path.join(__dirname, '..'),
   });

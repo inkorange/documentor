@@ -10,7 +10,7 @@ export interface PropMetadata {
   renderVariants?: boolean;
   displayTemplate?: string;
   hideInDocs?: boolean;
-  exampleValue?: string;
+  example?: string;
 }
 
 export interface ComponentMetadata {
@@ -150,7 +150,7 @@ export class ComponentParser {
         renderVariants: tags.renderVariants === 'true',
         displayTemplate: tags.displayTemplate,
         hideInDocs: tags.hideInDocs === 'true',
-        exampleValue: tags.exampleValue,
+        example: tags.example,
       };
     }
 
@@ -202,11 +202,6 @@ export class ComponentParser {
         const text = tag.getComment() || 'true';
         tags[tagName] = typeof text === 'string' ? text : 'true';
       }
-    }
-
-    // Support @example as an alias for @exampleValue
-    if (tags.example && !tags.exampleValue) {
-      tags.exampleValue = tags.example;
     }
 
     return tags;

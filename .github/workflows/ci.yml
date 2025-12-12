@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Type check
+        run: npx tsc --noEmit --project tsconfig.cli.json
+
+      - name: Run tests
+        run: npm test -- --passWithNoTests
+
+      - name: Build template
+        run: npm run build:template
+
+      - name: Validate template exists
+        run: |
+          if [ ! -d "template" ]; then
+            echo "Template directory not found!"
+            exit 1
+          fi

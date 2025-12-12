@@ -7,7 +7,7 @@ export interface PropMetadata {
   renderVariants?: boolean;
   displayTemplate?: string;
   hideInDocs?: boolean;
-  exampleValue?: string;
+  example?: string;
 }
 
 export interface ComponentMetadata {

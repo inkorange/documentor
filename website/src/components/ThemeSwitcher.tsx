@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './ThemeSwitcher.scss';
 
 interface Theme {
@@ -22,26 +22,7 @@ const ThemeSwitcher: React.FC = () => {
   const [currentTheme, setCurrentTheme] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Load theme index
-    fetch('/metadata/themes.json')
-      .then(res => res.json())
-      .then((data: ThemeIndex) => {
-        setThemes(data.themes);
-
-        // Check localStorage for saved preference
-        const savedTheme = localStorage.getItem('documentor-theme') || data.defaultTheme;
-        setCurrentTheme(savedTheme);
-        applyThemeById(savedTheme, data.themes);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Failed to load themes:', error);
-        setLoading(false);
-      });
-  }, []);
-
-  const applyThemeById = (themeId: string, themeList: Theme[]) => {
+  const applyThemeById = useCallback((themeId: string, themeList: Theme[]) => {
     const theme = themeList.find(t => t.id === themeId);
 
     // Fetch the theme CSS file
@@ -65,7 +46,26 @@ const ThemeSwitcher: React.FC = () => {
     // Save preference
     localStorage.setItem('documentor-theme', themeId);
     document.documentElement.setAttribute('data-theme', themeId);
-  };
+  }, []);
+
+  useEffect(() => {
+    // Load theme index
+    fetch('/metadata/themes.json')
+      .then(res => res.json())
+      .then((data: ThemeIndex) => {
+        setThemes(data.themes);
+
+        // Check localStorage for saved preference
+        const savedTheme = localStorage.getItem('documentor-theme') || data.defaultTheme;
+        setCurrentTheme(savedTheme);
+        applyThemeById(savedTheme, data.themes);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Failed to load themes:', error);
+        setLoading(false);
+      });
+  }, [applyThemeById]);
 
   const applyScopedThemeStyles = (cssText: string) => {
     // Remove existing scoped theme styles
@@ -80,8 +80,8 @@ const ThemeSwitcher: React.FC = () => {
 
     const cssVariables = rootMatch[1].trim();
 
-    // Create new scoped styles that apply to both .preview-content and .live-preview-content
-    const scopedCSS = `.preview-content, .live-preview-content { ${cssVariables} }`;
+    // Create new scoped styles that apply to both .preview-content and .live-preview-wrapper
+    const scopedCSS = `.preview-content, .live-preview-wrapper { ${cssVariables} }`;
 
     const styleElement = document.createElement('style');
     styleElement.id = 'scoped-theme-styles';
