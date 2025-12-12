@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2
+
+### Patch Changes
+
+- 7815f0c: README enhancements, bug fixes
+- 7815f0c: NPM Package Build Fixes
+
 ## 0.1.1
 
 ### Patch Changes
