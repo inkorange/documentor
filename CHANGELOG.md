@@ -1,10 +1,18 @@
 # Changelog
 
+## 0.1.1
+
+### Patch Changes
+
+- 5ff6b62: Initial project publishing with core Docspark features
+- 158e654: Updating manual NPM Publishing system
+
 ## Phase 3.2 Implementation - Theme Token File System
 
 ### Changes Made
 
 #### 1. Theme Background CSS Update
+
 **Changed**: Background color application to the correct parent container
 
 **Location**: `VariantShowcase.scss` - `.preview-content` container
@@ -26,14 +34,17 @@
 **Reason**: The theme background needs to be applied to the `.preview-content` parent container (in VariantShowcase) that wraps the LivePreview component. This ensures the entire preview area gets the theme background without white space around the component. The LivePreview component itself remains styling-agnostic and simply renders the component.
 
 #### 2. Build Process Enhancement
+
 **Added**: `copy-docs-assets` script to automate copying theme files
 
 **File**: `scripts/copy-docs-assets.js`
+
 - Automatically copies `docs/metadata/*` to `website/build/metadata/`
 - Automatically copies `docs/themes/*` to `website/build/themes/`
 - Integrated into `docs:dev` workflow
 
 **Updated package.json scripts:**
+
 ```json
 {
   "copy-docs-assets": "node ./scripts/copy-docs-assets.js",
@@ -44,29 +55,34 @@
 **Why**: Previously, theme files were generated in `docs/` but not automatically copied to the website build, preventing the ThemeSwitcher from loading themes. This automation ensures themes are always available to the documentation site.
 
 #### 3. Configuration Format
+
 **Updated**: `documentor.config.json` to use new theme structure
 
 ```json
 {
   "theme": {
-    "tokens": [{
-      "light": {
-        "source": "src/themes/light.css",
-        "background": "#000000"
-      },
-      "dark": {
-        "source": "src/themes/dark.css",
-        "background": "#FFFFFF"
+    "tokens": [
+      {
+        "light": {
+          "source": "src/themes/light.css",
+          "background": "#000000"
+        },
+        "dark": {
+          "source": "src/themes/dark.css",
+          "background": "#FFFFFF"
+        }
       }
-    }]
+    ]
   }
 }
 ```
 
 #### 4. ThemeSwitcher Styling Fix
+
 **Changed**: ThemeSwitcher component to use fixed colors instead of CSS variables
 
 **Before:**
+
 ```scss
 .theme-switcher {
   background: var(--background-secondary, #f9fafb);
@@ -76,6 +92,7 @@
 ```
 
 **After:**
+
 ```scss
 .theme-switcher {
   background: #ffffff;
@@ -100,12 +117,14 @@
 ### User-Facing Changes
 
 #### What Users See
+
 - **Theme Dropdown**: Appears in left sidebar between stats and component navigation
 - **Theme Options**: Shows "Light" and "Dark" based on config
 - **Live Background Updates**: Component preview backgrounds change instantly when theme is selected
 - **Persistent Preference**: Selected theme saved to localStorage
 
 #### How Backgrounds Work
+
 - Light theme: Black background (#000000) for components
 - Dark theme: White background (#FFFFFF) for components
 - Allows proper visibility of components regardless of theme color scheme
@@ -113,6 +132,7 @@
 ### Developer Experience
 
 #### Build Workflow
+
 ```bash
 # Full development workflow (automated)
 npm run docs:dev
@@ -125,6 +145,7 @@ npm run docs:serve       # Start server
 ```
 
 #### File Structure After Build
+
 ```
 website/build/
 ├── metadata/
@@ -161,13 +182,16 @@ None - Backward compatible with legacy theme format (string paths).
 ### Migration Notes
 
 Existing configurations using the old format still work:
+
 ```json
 {
   "theme": {
-    "tokens": [{
-      "light": "src/themes/light.css",
-      "dark": "src/themes/dark.css"
-    }]
+    "tokens": [
+      {
+        "light": "src/themes/light.css",
+        "dark": "src/themes/dark.css"
+      }
+    ]
   }
 }
 ```
