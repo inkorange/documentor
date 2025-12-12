@@ -1,8 +1,12 @@
+<img src="public/docspark-logo.png" alt="DocSpark Logo" width="150" />
+
 # DocSpark
 
-**Simple, automatic component documentation for React**
+**Simple, automatic component documentation for React built off your Typescript Definitions**
 
-DocSpark automatically generates beautiful, interactive documentation for your React components. Just add a simple config file and a few JSDoc tags, then generate a complete documentation site—no story files, no complex setup required.
+DocSpark automatically generates beautiful, interactive, documentation for your React components. Just add a simple config file and a few JSDoc tags, then generate a complete documentation site—no story files, no complex setup required.
+
+![DocSpark Screenshot](public/docspark-screen1.jpg)
 
 🚀 **Simpler than Storybook** • 📦 **Works with existing components** • ⚡ **Minimal configuration**
 
@@ -11,11 +15,17 @@ DocSpark automatically generates beautiful, interactive documentation for your R
 ## Features
 
 ✨ **Automatic Variant Generation** - Generates all component variants from TypeScript types
+
 📝 **JSDoc Integration** - Uses your existing comments and type definitions
+
 🎨 **Theme Token Support** - Extracts and documents CSS variables
+
 🔍 **Live Component Previews** - Interactive component showcase
+
 📊 **Test Coverage** - Optional Jest coverage integration
+
 🎯 **Static Site Output** - Deploy anywhere (GitHub Pages, Netlify, Vercel)
+
 ⚡ **Fast** - Pre-built templates mean instant builds
 
 ---
