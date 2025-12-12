@@ -8,14 +8,13 @@ on:
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
-    name: Release
+  version:
+    name: Create Version PR
     runs-on: ubuntu-latest
 
     permissions:
       contents: write
       pull-requests: write
-      id-token: write
 
     steps:
       - name: Checkout
@@ -28,22 +27,15 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Build template
-        run: npm run build:template
-
-      - name: Create Release Pull Request or Publish
-        id: changesets
+      - name: Create Release Pull Request
         uses: changesets/action@v1
         with:
-          publish: npm run release
+          version: npm run version
           title: 'chore: version packages'
           commit: 'chore: version packages'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
