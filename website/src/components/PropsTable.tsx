@@ -136,7 +136,14 @@ const PropsTable: React.FC<PropsTableProps> = ({
               </td>
               <td className="prop-default">
                 {metadata.default ? (
-                  <code>{metadata.default}</code>
+                  <div className="default-value-wrapper">
+                    <code>{metadata.default}</code>
+                    {metadata.defaultSource && (
+                      <span className={`default-source default-source--${metadata.defaultSource}`}>
+                        {metadata.defaultSource === 'inferred' ? 'inferred' : 'explicit'}
+                      </span>
+                    )}
+                  </div>
                 ) : (
                   <span className="undefined">-</span>
                 )}

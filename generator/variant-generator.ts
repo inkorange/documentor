@@ -4,6 +4,8 @@ export interface VariantExample {
   props: Record<string, any>;
   code: string;
   title: string;
+  isPermutation?: boolean; // True if this variant combines multiple variant props
+  combinedProps?: string[]; // Names of props that are combined in this permutation
 }
 
 export class VariantGenerator {
@@ -30,14 +32,17 @@ export class VariantGenerator {
       return [this.generateDefaultExample(component)];
     }
 
-    // Generate permutations
-    const permutations = this.generatePermutations(variantProps, component.props);
+    // Generate single-prop variants
+    const singleVariants = this.generateSinglePropVariants(variantProps, component.props, component);
 
-    // Limit to max permutations
-    const limited = permutations.slice(0, this.maxPermutations);
+    // Generate smart permutations (combinations of multiple variant props)
+    const permutationVariants = this.generateSmartPermutations(variantProps, component.props, component);
 
-    // Convert to examples with code and titles
-    return limited.map(props => this.createExample(component, props, variantProps));
+    // Combine and limit to max permutations
+    const allVariants = [...singleVariants, ...permutationVariants];
+    const limited = allVariants.slice(0, this.maxPermutations);
+
+    return limited;
   }
 
   /**
@@ -56,29 +61,144 @@ export class VariantGenerator {
   }
 
   /**
-   * Generate all permutations of variant props
+   * Generate variants for single props (one variant prop at a time)
    */
-  private generatePermutations(
+  private generateSinglePropVariants(
     variantProps: string[],
-    allProps: Record<string, PropMetadata>
-  ): Array<Record<string, any>> {
-    if (variantProps.length === 0) {
-      return [{}];
+    allProps: Record<string, PropMetadata>,
+    component: ComponentMetadata
+  ): VariantExample[] {
+    const variants: VariantExample[] = [];
+
+    for (const propName of variantProps) {
+      const propMeta = allProps[propName];
+      const values = propMeta.values || [];
+
+      for (const value of values) {
+        const props = { [propName]: value };
+        const complete = this.addRequiredProps(props, allProps);
+
+        const example = this.createExample(component, complete, [propName]);
+
+        variants.push(example);
+      }
     }
 
-    const permutations: Array<Record<string, any>> = [];
+    return variants;
+  }
+
+  /**
+   * Generate smart permutations of multiple variant props
+   * Respects exclusion rules from @variantExclude tags
+   */
+  private generateSmartPermutations(
+    variantProps: string[],
+    allProps: Record<string, PropMetadata>,
+    component: ComponentMetadata
+  ): VariantExample[] {
+    if (variantProps.length < 2) {
+      return []; // Need at least 2 variant props to create permutations
+    }
+
+    const permutations: VariantExample[] = [];
+    const maxCombinations = 10; // Limit permutations to avoid explosion
+
+    // Generate all combinations of variant props (2 or more props combined)
+    const combinations = this.generatePropCombinations(variantProps, 2, Math.min(variantProps.length, 3));
+
+    for (const propCombination of combinations) {
+      if (permutations.length >= maxCombinations) break;
+
+      // Check if this combination is valid (no exclusions)
+      if (!this.isValidCombination(propCombination, allProps)) {
+        continue;
+      }
+
+      // Generate a few meaningful value combinations for these props
+      const valueCombinations = this.generateValueCombinations(propCombination, allProps);
+
+      for (const valueCombo of valueCombinations) {
+        if (permutations.length >= maxCombinations) break;
+
+        const complete = this.addRequiredProps(valueCombo, allProps);
+
+        const example = this.createExample(component, complete, propCombination);
+
+        // Mark as permutation
+        example.isPermutation = true;
+        example.combinedProps = propCombination;
+
+        permutations.push(example);
+      }
+    }
+
+    return permutations;
+  }
+
+  /**
+   * Generate combinations of props (subsets of size minSize to maxSize)
+   */
+  private generatePropCombinations(props: string[], minSize: number, maxSize: number): string[][] {
+    const combinations: string[][] = [];
+
+    const combine = (start: number, current: string[]) => {
+      if (current.length >= minSize && current.length <= maxSize) {
+        combinations.push([...current]);
+      }
+
+      if (current.length >= maxSize) return;
+
+      for (let i = start; i < props.length; i++) {
+        combine(i + 1, [...current, props[i]]);
+      }
+    };
+
+    combine(0, []);
+    return combinations;
+  }
+
+  /**
+   * Check if a combination of props is valid (no exclusion conflicts)
+   */
+  private isValidCombination(props: string[], allProps: Record<string, PropMetadata>): boolean {
+    for (let i = 0; i < props.length; i++) {
+      const propName = props[i];
+      const propMeta = allProps[propName];
+
+      if (propMeta.excludedWith) {
+        for (const excludedProp of propMeta.excludedWith) {
+          if (props.includes(excludedProp)) {
+            return false; // This combination is excluded
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Generate meaningful value combinations for a set of props
+   * Takes first 2 values of each prop to avoid explosion
+   */
+  private generateValueCombinations(
+    props: string[],
+    allProps: Record<string, PropMetadata>
+  ): Array<Record<string, any>> {
+    if (props.length === 0) return [{}];
+
+    const valueCombos: Array<Record<string, any>> = [];
+    const maxPerProp = 2; // Limit to 2 values per prop to keep permutations reasonable
 
     const generate = (index: number, current: Record<string, any>) => {
-      if (index === variantProps.length) {
-        // Add required props and sensible defaults
-        const complete = this.addRequiredProps({ ...current }, allProps);
-        permutations.push(complete);
+      if (index === props.length) {
+        valueCombos.push({ ...current });
         return;
       }
 
-      const propName = variantProps[index];
+      const propName = props[index];
       const propMeta = allProps[propName];
-      const values = propMeta.values || [];
+      const values = (propMeta.values || []).slice(0, maxPerProp);
 
       for (const value of values) {
         generate(index + 1, { ...current, [propName]: value });
@@ -86,7 +206,7 @@ export class VariantGenerator {
     };
 
     generate(0, {});
-    return permutations;
+    return valueCombos;
   }
 
   /**

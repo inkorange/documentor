@@ -1,0 +1,470 @@
+@use 'typography' as *;
+
+// Styles ALL Styleguide form fields. Be careful when styling `Component`s vs. `HTMLElement`s
+
+.form-field {
+	--input-field-padding: calc(var(--form-field-label-offset) + var(--form-field-label-padding));
+	--input-field-label-left: calc(var(--form-field-label-offset) + var(--form-field-label-offset-prefix));
+	--label-top: calc(var(--form-field-min-height) / 2);
+
+	--checkbox-background-color: var(--form-field-checkbox-background-color);
+	--checkbox-annotation-color: var(--form-field-checkbox-annotation-color);
+
+	--check-icon-scale: 0.6;
+	--input-field-border-radius: var(--spacing-3xs);
+
+	width: 100%;
+	display: inline-block;
+	position: relative;
+
+	&:global(.dark) {
+		--checkbox-background-color: var(--form-field-dark-checkbox-background-color);
+		--checkbox-annotation-color: var(--form-field-dark-checkbox-annotation-color);
+		--check-icon-scale: 0.5;
+	}
+
+	@mixin form-label {
+		position: absolute;
+		top: 0;
+		left: var(--input-field-label-left);
+		transform: translateY(-50%);
+		z-index: 1;
+
+		padding: 0 var(--form-field-label-padding);
+		font-size: var(--font-size-subtext);
+		font-weight: var(--font-semibold);
+
+		background-color: transparent;
+	}
+
+	@mixin input-container {
+		display: inline-block;
+
+		box-sizing: border-box;
+		min-height: var(--form-field-min-height);
+		padding: 0 var(--input-field-padding);
+		padding-left: calc(
+			var(--form-field-label-offset) + var(--form-field-label-padding) + var(--form-field-label-offset-prefix)
+		);
+		border: 1px solid var(--form-field-border-color);
+		border-radius: var(--input-field-border-radius);
+		width: 100%;
+
+		@include h6;
+		background-color: transparent;
+		outline: none;
+
+		&:focus {
+			border-color: var(--form-field-focus-border-color);
+		}
+
+		&:where(textarea) {
+			resize: none;
+		}
+
+		&:has(+ button[type='button']),
+		&:is(.form-field[data-adorned='true'] input) {
+			padding-right: var(--spacing-xl);
+		}
+
+		&[aria-invalid='true'] {
+			border-color: var(--form-field-error-color);
+		}
+	}
+
+	@mixin outlined-input-label {
+		&:focus ~ .floating-label,
+		&:not(:placeholder-shown) ~ .floating-label {
+			top: 0 !important;
+			left: var(--form-field-label-offset);
+			font-size: var(--font-size-subtext);
+			font-weight: var(--font-semibold);
+		}
+
+		&:focus ~ fieldset > legend,
+		&:not(:placeholder-shown) ~ fieldset > legend {
+			font-size: var(--font-size-subtext);
+			padding: 0 var(--form-field-label-padding);
+
+			svg {
+				display: inline;
+			}
+		}
+
+		&:focus ~ fieldset {
+			border-color: var(--form-field-focus-border-color);
+		}
+
+		&[aria-invalid='true'] ~ fieldset {
+			border-color: var(--form-field-error-color);
+		}
+	}
+
+	.prefix-label-container {
+		position: absolute;
+		left: calc(var(--spacing-sm) / 2);
+		top: var(--label-top);
+		transform: translateY(-50%);
+		@include body(var(--font-semibold));
+	}
+
+	.floating-label {
+		@include form-label;
+		font-size: var(--font-size-subtext);
+		font-weight: var(--font-semibold);
+		color: var(--form-field-input-background-color);
+		transition: all 0.2s;
+	}
+
+	> input[type='date']::-webkit-calendar-picker-indicator {
+		position: absolute;
+		right: var(--input-field-padding);
+	}
+
+	> input[type='date']::-webkit-date-and-time-value {
+		text-align: left;
+	}
+
+	> input[type='tel'],
+	> input[type='text'],
+	> input[type='number'],
+	> input[type='password'],
+	> input[type='email'],
+	> input[type='date'],
+	> input[type='search'],
+	> textarea,
+	> select {
+		@include input-container;
+		@include outlined-input-label;
+	}
+
+	> label:where(:not(input + label)) {
+		@include form-label;
+		background-color: var(--form-field-input-background-color);
+
+		+ input[type='tel'],
+		+ input[type='text'],
+		+ input[type='password'],
+		+ input[type='email'],
+		+ input[type='date'],
+		+ input[type='search'],
+		+ textarea,
+		+ select {
+			@include input-container;
+		}
+
+		+ [data-select] {
+			min-height: var(--form-field-min-height);
+			font-size: var(--font-size-body);
+			font-weight: var(--font-semibold);
+		}
+	}
+
+	> [role='alert'] {
+		display: none;
+	}
+
+	/*
+	 * `data-invalid` is a FALLBACK for when `:has()` is unsupported.
+	 * Where a JS check is needed, we MUST use the native feature check: `CSS.supports("selector(:has(a))")`.
+	 * TODO: REMOVE `data-invalid` when `:has` is fully supported: https://developer.mozilla.org/en-US/docs/Web/CSS/:has.
+	 */
+	&:is(:has([aria-invalid='true']), fieldset[aria-invalid='true'], [data-invalid='true']) {
+		label:not(.floating-label) {
+			color: var(--form-field-error-color);
+		}
+
+		[role='alert'] {
+			@include subtext;
+			display: block;
+			margin-top: var(--spacing-2xs);
+			color: var(--form-field-error-color);
+
+			a {
+				color: var(--form-field-error-color);
+				cursor: pointer;
+				@include anchor-underline;
+			}
+		}
+
+		/*
+		* if a form field has a tooltip when the error border is applied
+		* and alert displayed will offset the button this will fix to realign
+		*/
+		&:has(div[data-tooltip='true']) {
+			button {
+				top: 50%;
+				transform: translateY(-50%);
+			}
+		}
+	}
+
+	&--rounded {
+		--input-field-border-radius: 100vmax;
+	}
+
+	&--floating-field {
+		input {
+			border-width: 0 !important;
+		}
+
+		fieldset {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			min-height: var(--form-field-min-height);
+			height: calc(var(--form-field-min-height) - var(--spacing-3xs));
+			pointer-events: none;
+			border: 1px solid var(--form-field-border-color) !important;
+			border-radius: var(--input-field-border-radius);
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+
+			> legend {
+				@include form-label;
+				padding: 0;
+				margin: 0;
+				position: relative;
+				font-size: 0;
+				font-weight: var(--font-semibold);
+				transition: all 0.2s;
+				height: 1px;
+				margin-left: var(--form-field-label-offset);
+				padding: 0;
+				visibility: hidden;
+
+				svg {
+					display: none;
+				}
+			}
+		}
+
+		label[data-show='false'] {
+			display: none;
+		}
+
+		label[data-show='true'] {
+			display: inline-block;
+		}
+
+		.floating-label {
+			top: var(--label-top);
+			font-size: var(--font-size-h6);
+			font-weight: var(--font-regular);
+			color: var(--form-field-floating-label-color);
+		}
+
+		&:is(:has([aria-invalid='true']), fieldset[aria-invalid='true'], [data-invalid='true']) {
+			> input[type='text'],
+			> input[type='tel'],
+			> input[type='email'] {
+				&:focus ~ :global(.floating-label),
+				&:not(:placeholder-shown) ~ :global(.floating-label) {
+					color: var(--form-field-input-background-color);
+				}
+			}
+
+			> [role='alert'] {
+				@include subtext;
+				padding-left: 0;
+				margin-top: var(--spacing-2xs);
+			}
+
+			> input[type='tel'],
+			> input[type='text'],
+			> input[type='number'],
+			> input[type='password'],
+			> input[type='email'],
+			> input[type='date'],
+			> input[type='search'],
+			> textarea,
+			> select {
+				&:not(:placeholder-shown) ~ .floating-label,
+				&:focus ~ .floating-label {
+					color: var(--form-field-error-color);
+				}
+			}
+		}
+
+		&:not(:has([aria-invalid='true']), fieldset[aria-invalid='true'], [data-invalid='true']) {
+			> input[type='tel'],
+			> input[type='text'],
+			> input[type='number'],
+			> input[type='password'],
+			> input[type='email'],
+			> input[type='date'],
+			> input[type='search'],
+			> textarea,
+			> select {
+				&:focus ~ .floating-label,
+				&:not(:placeholder-shown) ~ .floating-label {
+					color: var(--form-field-color);
+				}
+			}
+		}
+	}
+
+	> input[type='tel'],
+	> input[type='text'],
+	> input[type='number'],
+	> input[type='password'],
+	> input[type='email'],
+	> input[type='date'],
+	> input[type='search'],
+	> textarea,
+	> select {
+		@include input-container;
+		@include outlined-input-label;
+	}
+
+	> label:where(:not(input + label)) {
+		@include form-label;
+		background-color: var(--form-field-input-background-color);
+
+		+ input[type='tel'],
+		+ input[type='text'],
+		+ input[type='password'],
+		+ input[type='email'],
+		+ input[type='date'],
+		+ input[type='search'],
+		+ textarea,
+		+ select {
+			@include input-container;
+		}
+
+		+ [data-select] {
+			min-height: var(--form-field-min-height);
+			font-size: var(--font-size-body);
+			font-weight: var(--font-semibold);
+		}
+	}
+
+	// TODO: Consider making `.form-field` an `inline-flex` to add more flexibility to adornment styles
+	> button[type='button'] {
+		position: absolute;
+		right: var(--spacing-4xs);
+		top: var(--spacing-4xs);
+		height: calc(var(--form-field-min-height) - var(--spacing-3xs));
+		// hint treatment to show that the content of the input overflows
+		// TODO: Need a better solution that clips the value before the button
+		box-shadow: -16px 0 12px -8px var(--form-field-input-background-color);
+		box-sizing: border-box;
+		padding: 0 12px;
+		border: none;
+
+		cursor: pointer;
+		color: var(--form-field-floating-label-color);
+		background-color: var(--form-field-input-background-color);
+		font-size: var(--font-size-subtext);
+		font-weight: var(--font-bold);
+
+		@media (hover: hover) {
+			&:hover {
+				color: var(--form-field-color);
+			}
+		}
+
+		&:active {
+			color: var(--form-field-color);
+		}
+	}
+
+	/* -------------------- Checkbox Styles -------------------- */
+	input[type='checkbox'] + label {
+		--checkbox-color: var(--form-field-checkbox-color);
+
+		--check-lineheight-offset: 3px;
+
+		display: flex;
+		justify-content: flex-start;
+		align-items: flex-start;
+		gap: var(--spacing-xs);
+		position: relative;
+
+		cursor: pointer;
+		user-select: none;
+		color: var(--checkbox-color);
+		transition: color 0.2s ease-in-out;
+
+		@include body();
+
+		&.small-label {
+			font-size: var(--font-size-subtext);
+			line-height: calc(20 / 12);
+			--check-lineheight-offset: 2px;
+		}
+
+		&:first-line {
+			line-height: 100% !important;
+		}
+
+		@media (hover: hover) {
+			&:hover {
+				--checkbox-color: var(--form-field-checkbox-color);
+			}
+		}
+		svg.checkbox-check {
+			display: none;
+			position: absolute;
+			top: var(--check-lineheight-offset); // consideration for the added margin top to align for line-height
+			left: 0;
+			transform: scale(var(--check-icon-scale));
+			path {
+				stroke-width: 2px;
+				stroke: var(--checkbox-annotation-color);
+			}
+		}
+		// Physical Checkbox AND Checkmark
+		&::before {
+			// Flex Setup
+			display: inline-flex;
+			justify-content: center;
+			align-items: center;
+
+			margin-top: var(--check-lineheight-offset);
+
+			// Sizing Setup
+			box-sizing: border-box;
+			width: var(--form-field-checkbox-size);
+			height: var(--form-field-checkbox-size);
+			min-width: var(--form-field-checkbox-size);
+			border: 1px solid var(--checkbox-color);
+			border-radius: 1px;
+
+			// Icon Setup
+			content: '';
+			color: transparent;
+		}
+
+		// Focus Styles
+		&:is(input[type='checkbox']:focus-visible + label) {
+			--checkbox-color: var(--form-field-checkbox-color);
+
+			&::before {
+				box-shadow: 0 0 4px 1px var(--form-field-checkbox-focus-color);
+			}
+		}
+
+		// Checked Styles
+		&:is(input[type='checkbox']:checked + label) {
+			--checkbox-color: var(--form-field-checkbox-color);
+
+			&::before {
+				color: var(--checkbox-color);
+				background-color: var(--checkbox-background-color);
+			}
+
+			svg.checkbox-check {
+				display: block;
+			}
+		}
+	}
+
+	.character-count-label {
+		@include subtext();
+		padding-top: var(--spacing-2xs);
+		color: var(--form-field-floating-label-color);
+	}
+}

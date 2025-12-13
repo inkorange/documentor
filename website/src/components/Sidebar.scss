@@ -143,6 +143,28 @@
   }
 }
 
+.nav-subsection {
+  margin-top: 0.75rem;
+
+  .nav-subsection-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary, #6b7280);
+    padding: 0.5rem 1.5rem 0.25rem 2rem;
+    margin: 0;
+  }
+
+  .nav-list--nested {
+    .nav-link {
+      padding-left: 2.5rem;
+
+      &.active {
+        padding-left: calc(2.5rem - 3px);
+      }
+    }
+  }
+}
+
 .sidebar-error {
   padding: 1rem 1.5rem;
   color: var(--error-color, #ef4444);

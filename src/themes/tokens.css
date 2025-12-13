@@ -1,0 +1,242 @@
+/**
+	This example token file serves as a dictionary that maps our component colors and spacing variables to a local
+	application's defined css variable tokens. By implementing this mapping, we decouple the assumption that the css
+	variables exists in the parent application that consumes the web component library.
+*/
+
+:root {
+	/* #region Global Tokens ************************************ */
+
+	/* SPACING */
+	--base-layout-grid: 8px;
+	--spacing-4xs: calc(var(--base-layout-grid) / 4);
+	--spacing-3xs: calc(var(--base-layout-grid) / 2);
+	--spacing-2xs: var(--base-layout-grid);
+	--spacing-xs: calc(var(--base-layout-grid) * 2);
+	--spacing-sm: calc(var(--base-layout-grid) * 3);
+	--spacing-md: calc(var(--base-layout-grid) * 4);
+	--spacing-2md: calc(var(--base-layout-grid) * 5);
+	--spacing-3md: calc(var(--base-layout-grid) * 6);
+	--spacing-lg: calc(var(--base-layout-grid) * 7);
+	--spacing-xl: calc(var(--base-layout-grid) * 8);
+	--spacing-2xl: calc(var(--base-layout-grid) * 10);
+	--spacing-3xl: calc(var(--base-layout-grid) * 15);
+
+	/* COLORS */
+	--base-text-color: var(--color-black, #1d1d1d);
+	--base-error-text-color: var(--color-red, #dc0019);
+	--color-screen-background: rgba(0 0 0 / 0.5);
+
+	/* #endregion ********************************************** */
+
+	/* #region Shared Input Tokens ************************************ */
+	--color-input-focus-shadow: var(--color-focus-shadow, #14a1ff);
+
+	/* #endregion ********************************************** */
+
+	/* COMPONENTS */
+
+	/* #region Accordion Tokens ************************************ */
+	--Accordion-default-title-color: var(--color-black);
+	--Accordion-default-text-color: var(--color-grey-6);
+	--Accordion-default-icon-color: var(--color-black);
+	--Accordion-default-border-color: var(--color-grey-3);
+
+	--Accordion-large-title-color: var(--color-black);
+	--Accordion-large-title-hover-color: var(--color-grey-5);
+	--Accordion-large-background-color: var(--color-grey-1);
+	/* #endregion ********************************************** */
+
+	/* #region AnimatedIconSlideout Tokens ************************************ */
+	--AnimatedIconSlideout-button-height: 40px;
+	--AnimatedIconSlideout-max-width: 320px;
+	--AnimatedIconSlideout-background-color: var(--color-black);
+	--AnimatedIconSlideout-text-color: var(--color-white);
+	/* #endregion ********************************************** */
+
+	/* #region ArcScale Tokens ************************************ */
+	--ArcScale-background-color: var(--color-grey-3);
+	--ArcScale-fill-color: var(--color-red);
+	/* #endregion ********************************************** */
+
+	/* #region AutocompleteInput Tokens ************************************ */
+	--AutocompleteInput-container-background-color: var(--color-white);
+	--AutocompleteInput-container-default-text-color: var(--color-grey-5);
+	--AutocompleteInput-container-default-border-color: var(--color-black);
+	--AutocompleteInput-container-selected-text-color: var(--color-black);
+	--AutocompleteInput-container-selected-background-color: var(--color-grey-2);
+	/* #endregion ********************************************** */
+
+	/* #region Button Tokens ************************************ */
+	--Button-border-radius: 100vmax;
+	--Button-height: 44px;
+	--Button-width: 212px;
+	--Button-max-width: 288px;
+	--Button-font-size: var(--font-size-body);
+	--Button-font-weight: var(--font-semibold);
+
+	/* Primary ------------------- */
+	--Button-primary-background-color: var(--color-black);
+	--Button-primary-text-color: var(--color-white);
+
+	/* Secondary ------------------- */
+	--Button-secondary-background-color: var(--color-white);
+	--Button-secondary-text-color: var(--color-black);
+
+	/* Tertiary ------------------- */
+	--Button-tertiary-background-color: var(--color-red);
+	--Button-tertiary-text-color: var(--color-white);
+
+	/* Text ------------------- */
+	--Button-text-background-color: transparent;
+	--Button-text-text-color: var(--color-grey-5);
+	--Button-text-text-hover-color: var(--color-grey-5);
+	/* #endregion ********************************************** */
+
+	/* #region Card Tokens ************************************ */
+	--Card-background-color: var(--color-white);
+	--Card-default-border-color: var(--color-black);
+	--Card-default-highlight-color: var(--color-grey-3);
+	--Card-error-border-color: var(--base-error-text-color);
+	/* #endregion ********************************************** */
+
+	/* #region Carousel Tokens ************************************ */
+	--Carousel-button-icon-color: var(--color-black);
+
+	/* Pagination ------------------- */
+	--Carousel-default-pagination-background-color: var(--color-grey-4);
+	--Carousel-default-pagination-active-grid-background-color: var(--color-black);
+
+	/* RoundNavActions Pagination ------------------- */
+	--Carousel-round-pagination-background-color: var(--color-white);
+	--Carousel-round-pagination-text-color: var(--color-black);
+
+	/* #endregion ********************************************** */
+
+	/* #region Form Element Tokens ************************************ */
+	--form-field-min-height: 44px;
+	--form-field-label-offset: 12px;
+	--form-field-label-offset-prefix: 0px;
+	--form-field-label-padding: var(--spacing-3xs);
+	--form-field-color: var(--color-black, #1d1d1d);
+	--form-field-input-background-color: var(--color-white, #ffffff);
+	--form-field-border-color: var(--color-grey-5, #5f5f5f);
+	--form-field-floating-label-color: var(--color-grey-5, #5f5f5f);
+	--form-field-error-color: var(--base-error-text-color);
+	--form-field-focus-border-color: var(--color-black, #1d1d1d);
+
+	/* Checkbox Default ---------------- */
+	--form-field-checkbox-size: var(--spacing-xs);
+	--form-field-checkbox-color: var(--color-black, #1d1d1d);
+	--form-field-checkbox-annotation-color: var(--color-black, #1d1d1d);
+	--form-field-checkbox-focus-color: var(--color-input-focus-shadow, #14a1ff);
+	--form-field-checkbox-background-color: transparent;
+
+	/* Checkbox Dark ---------------- */
+	--form-field-dark-checkbox-background-color: var(--color-black, #1d1d1d);
+	--form-field-dark-checkbox-annotation-color: var(--color-white, #ffffff);
+	/* #endregion ********************************************** */
+
+	/* #region Dialog Tokens ************************************ */
+	--Dialog-default-width: 488px;
+	--Dialog-background-color: var(--color-white);
+	--Dialog-text-color: var(--color-black);
+	--Dialog-actions-border-color: var(--color-grey-3);
+	/* #endregion ********************************************** */
+
+	/* #region DropMenu Tokens ************************************ */
+	--DropMenu-button-background-color: var(--color-black);
+	--DropMenu-button-text-color: var(--color-white);
+	--DropMenu-panel-background-color: var(--color-white);
+	--DropMenu-panel-text-color: var(--color-black);
+	/* #endregion ********************************************** */
+
+	/* #region DropPanel Tokens ************************************ */
+	--DropPanel-background-color: var(--color-white);
+	--DropPanel-text-color: var(--color-black);
+	--DropPanel-title-background-color: var(--color-white);
+	--DropPanel-title-text-color: var(--color-black);
+	--DropPanel-border-color: var(--color-grey-3);
+	/* #endregion ********************************************** */
+
+	/* #region IconButton Tokens ************************************ */
+	--IconButton-padding: var(--spacing-2xs, 8px);
+	/* #endregion ********************************************** */
+
+	/* #region Message Tokens ************************************ */
+	--Message-alert-background-color: var(--color-grey-2);
+	--Message-alert-text-color: var(--color-black);
+	--Message-error-text-color: var(--base-error-text-color);
+	--Message-warning-text-color: var(--color-grey-5);
+	/* #endregion ********************************************** */
+
+	/* #region NavigationDrawer Tokens ************************************ */
+	--NavigationDrawer-mobile-width: 100%;
+	--NavigationDrawer-tablet-width: 62.5%;
+	--NavigationDrawer-desktop-width: 420px;
+	--NavigationDrawer-background-color: var(--color-white);
+	--NavigationDrawer-text-color: var(--color-primary-text);
+	/* #endregion ********************************************** */
+
+	/* #region Message Tokens ************************************ */
+	--PillButton-default-background-color: var(--color-grey-2);
+	--PillButton-default-text-color: var(--color-black);
+	--PillButton-selected-background-color: var(--color-black);
+	--PillButton-selected-text-color: var(--color-white);
+	/* #endregion ********************************************** */
+
+	/* #region Popup Tokens ************************************ */
+	--Popup-background-color: var(--color-white);
+	--Popup-text-color: var(--color-black);
+	/* #endregion ********************************************** */
+
+	/* #region QuoteBlock Tokens ************************************ */
+	--QuoteBlock-background-color: var(--color-grey-1);
+	--QuoteBlock-text-color: var(--color-black);
+	--QuoteBlock-border-color: var(--color-black);
+	/* #endregion ********************************************** */
+
+	/* #region Radio Tokens ************************************ */
+	--Radio-default-color: var(--color-black);
+	--Radio-disabled-background-color: var(--color-grey-3);
+	/* #endregion ********************************************** */
+
+	/* #region ScaleDiagram Tokens ************************************ */
+	--ScaleDiagram-line-color: var(--color-grey-5);
+	--ScaleDiagram-circle-color: var(--color-black);
+	--ScaleDiagram-text-color: var(--base-text-color);
+	/* #endregion ********************************************** */
+
+	/* #region Select Tokens ************************************ */
+	--Select-height: var(--Button-height);
+	--Select-text-color: var(--base-text-color);
+	--Select-background-color: var(--color-white);
+	--Select-icon-color: var(--base-text-color);
+	--Select-default-color: var(--color-grey-5);
+	--Select-active-color: var(--color-black);
+	--Select-active-background-color: var(--color-grey-2);
+	--Select-error-color: var(--base-error-text-color);
+	/* #endregion ********************************************** */
+
+	/* #region Tabs Tokens ************************************ */
+	--Tabs-background-color: var(--color-white);
+	--Tabs-text-color: var(--color-grey-5);
+	--Tabs-border-color: var(--color-grey-3);
+	/* #endregion ********************************************** */
+
+	/* #region Toast Tokens ************************************ */
+	--Toast-background-color: var(--color-black);
+	--Toast-text-color: var(--color-white);
+	--Toast-timer-line-color: var(--color-red);
+	/* #endregion ********************************************** */
+
+	/* #region Tooltip Tokens ************************************ */
+	--Tooltip-background-color: var(--color-black);
+	--Tooltip-text-color: var(--color-white);
+	/* #endregion ********************************************** */
+
+	/* #region Icon Tokens ************************************ */
+	--icon-fill-color: var(--color-white);
+	--icon-line-color: var(--color-black);
+	/* #endregion ********************************************** */
+}

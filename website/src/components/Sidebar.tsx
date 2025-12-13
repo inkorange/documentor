@@ -49,17 +49,76 @@ const Sidebar: React.FC = () => {
     );
   }
 
-  // Group components by directory
-  const componentsByPath = index.components.reduce((acc, component) => {
-    const pathParts = component.filePath.split('/');
-    const directory = pathParts.length > 2 ? pathParts[pathParts.length - 2] : 'components';
+  // Build nested component structure (max 2 levels deep)
+  interface ComponentGroup {
+    name: string;
+    components: typeof index.components;
+    subgroups: Record<string, ComponentGroup>;
+  }
 
-    if (!acc[directory]) {
-      acc[directory] = [];
-    }
-    acc[directory].push(component);
-    return acc;
-  }, {} as Record<string, typeof index.components>);
+  const formatFolderName = (name: string): string => {
+    return name
+      .split(/[-_]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const buildComponentTree = () => {
+    const root: Record<string, ComponentGroup> = {};
+
+    index.components.forEach((component) => {
+      // Extract path relative to src/components/
+      const pathParts = component.filePath.split('/');
+      const componentsIndex = pathParts.indexOf('components');
+      const relativeParts = pathParts.slice(componentsIndex + 1, -1); // Exclude filename
+
+      if (relativeParts.length === 0) {
+        // Component directly in src/components/
+        if (!root['root']) {
+          root['root'] = { name: 'Components', components: [], subgroups: {} };
+        }
+        root['root'].components.push(component);
+      } else if (relativeParts.length === 1) {
+        // One level deep (e.g., forms/Button.tsx)
+        const dir = relativeParts[0];
+        if (!root[dir]) {
+          root[dir] = { name: formatFolderName(dir), components: [], subgroups: {} };
+        }
+        root[dir].components.push(component);
+      } else {
+        // Two or more levels deep (e.g., forms/buttons/Button.tsx)
+        const topDir = relativeParts[0];
+        const subDir = relativeParts[1];
+
+        if (!root[topDir]) {
+          root[topDir] = { name: formatFolderName(topDir), components: [], subgroups: {} };
+        }
+        if (!root[topDir].subgroups[subDir]) {
+          root[topDir].subgroups[subDir] = { name: formatFolderName(subDir), components: [], subgroups: {} };
+        }
+        root[topDir].subgroups[subDir].components.push(component);
+      }
+    });
+
+    // Sort components within each group alphabetically
+    Object.values(root).forEach(group => {
+      group.components.sort((a, b) => a.name.localeCompare(b.name));
+
+      // Sort components within subgroups
+      Object.values(group.subgroups).forEach(subgroup => {
+        subgroup.components.sort((a, b) => a.name.localeCompare(b.name));
+      });
+    });
+
+    return root;
+  };
+
+  const componentTree = buildComponentTree();
+
+  // Sort folders alphabetically (top level)
+  const sortedFolders = Object.entries(componentTree).sort((a, b) =>
+    a[1].name.localeCompare(b[1].name)
+  );
 
   return (
     <aside className="sidebar">
@@ -91,24 +150,52 @@ const Sidebar: React.FC = () => {
       <ThemeSwitcher />
 
       <nav className="sidebar-nav">
-        {Object.entries(componentsByPath).map(([directory, components]) => (
-          <div key={directory} className="nav-section">
-            <h3 className="nav-section-title">{directory}</h3>
-            <ul className="nav-list">
-              {components.map((component) => (
-                <li key={component.name} className="nav-item">
-                  <Link
-                    to={`/components/${component.name}`}
-                    className={`nav-link ${
-                      location.pathname === `/components/${component.name}` ? 'active' : ''
-                    }`}
-                  >
-                    <span className="nav-link-name">{component.name}</span>
-                    <span className="nav-link-count">{component.variantCount}</span>
-                  </Link>
-                </li>
+        {sortedFolders.map(([key, group]) => (
+          <div key={key} className="nav-section">
+            <h3 className="nav-section-title">{group.name}</h3>
+
+            {/* Render components at this level */}
+            {group.components.length > 0 && (
+              <ul className="nav-list">
+                {group.components.map((component) => (
+                  <li key={component.name} className="nav-item">
+                    <Link
+                      to={`/components/${component.name}`}
+                      className={`nav-link ${
+                        location.pathname === `/components/${component.name}` ? 'active' : ''
+                      }`}
+                    >
+                      <span className="nav-link-name">{component.name}</span>
+                      <span className="nav-link-count">{component.variantCount}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* Render subgroups (sorted alphabetically) */}
+            {Object.entries(group.subgroups)
+              .sort((a, b) => a[1].name.localeCompare(b[1].name))
+              .map(([subKey, subgroup]) => (
+                <div key={subKey} className="nav-subsection">
+                  <h4 className="nav-subsection-title">{subgroup.name}</h4>
+                  <ul className="nav-list nav-list--nested">
+                    {subgroup.components.map((component) => (
+                      <li key={component.name} className="nav-item">
+                        <Link
+                          to={`/components/${component.name}`}
+                          className={`nav-link ${
+                            location.pathname === `/components/${component.name}` ? 'active' : ''
+                          }`}
+                        >
+                          <span className="nav-link-name">{component.name}</span>
+                          <span className="nav-link-count">{component.variantCount}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
           </div>
         ))}
       </nav>

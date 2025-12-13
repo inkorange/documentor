@@ -46,8 +46,7 @@
 
   "theme": {
     "tokens": [{
-      "light": { "source": "src/themes/light.css", "background": "#FFFFFF" },
-      "dark": { "source": "src/themes/dark.css", "background": "#000000" }
+      "default": { "source": "src/themes/tokens.css", "background": "#FFFFFF" }
     }],
     "primaryColor": "#0066cc"
   },

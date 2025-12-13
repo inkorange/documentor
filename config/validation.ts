@@ -139,6 +139,13 @@ const ThemeSchema = z.object({
    * @example "./assets/favicon.ico"
    */
   favicon: z.string().optional(),
+
+  /**
+   * Path to custom stylesheet for documentation site
+   * Allows overriding CSS variables for colors, spacing, typography, etc.
+   * @example "./docs-theme.css"
+   */
+  customStylesheet: z.string().optional(),
 }).describe('Theme and branding configuration');
 
 /**

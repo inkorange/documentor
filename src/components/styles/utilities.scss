@@ -1,0 +1,18 @@
+/* -------------------- Font Weights -------------------- */
+*:where([class*='font-']) {
+	&.font-regular {
+		font-weight: var(--font-regular);
+	}
+
+	&.font-semibold {
+		font-weight: var(--font-semibold);
+	}
+
+	&.font-bold {
+		font-weight: var(--font-bold);
+	}
+
+	&.font-condensed-black {
+		font-weight: var(--font-condensed-black);
+	}
+}

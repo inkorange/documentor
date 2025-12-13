@@ -41,6 +41,7 @@ export interface DocSparkConfig {
     primaryColor?: string;
     logo?: string;
     favicon?: string;
+    customStylesheet?: string;
   };
 
   coverage?: {

@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run TypeScript type checking on all files
+echo "🔍 Running TypeScript type checking..."
+npx tsc --noEmit --project tsconfig.cli.json || {
+  echo "❌ TypeScript errors found. Please fix them before committing."
+  exit 1
+}
+
+echo "✅ TypeScript validation passed!"

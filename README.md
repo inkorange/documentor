@@ -109,7 +109,7 @@ Create `docspark.config.json` in your project root:
 
 ### Full Configuration Options
 
-For a comprehensive guide to all configuration options, including detailed explanations, types, defaults, and examples, see **[Configuration Documentation](https://github.com/inkorange/docspark/CONFIGURATION.md)** for a detailed reference of all options.
+For a comprehensive guide to all configuration options, including detailed explanations, types, defaults, and examples, see the **[Configuration Documentation](./CONFIGURATION.md)** for a detailed reference of all options.
 
 Quick overview of available configuration sections:
 - **Basic** - Project name, description, version
@@ -127,7 +127,7 @@ Quick overview of available configuration sections:
 
 For a comprehensive guide on writing components that work with DocSpark, including JSDoc tags, prop documentation, and CSS variables, see:
 
-**[DOCUMENTING.md](./DOCUMENTING.md)** - Complete component documentation guide
+**[JSDoc Tag Documentation](./DOCUMENTING.md)** - Complete component documentation guide
 
 Quick overview of JSDoc tags:
 - `@renderVariants true` - Generate examples for each prop value
@@ -154,8 +154,6 @@ export interface ButtonProps {
   children: React.ReactNode;
 }
 ```
-
-See the **[JSDoc Tags Documentation](https://github.com/inkorange/docspark/DOCUMENTING.md)** for complete examples and best practices for getting the most out of Docspark.
 
 ---
 

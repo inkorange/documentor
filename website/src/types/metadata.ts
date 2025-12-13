@@ -3,11 +3,13 @@ export interface PropMetadata {
   values?: string[];
   optional: boolean;
   default?: string;
+  defaultSource?: 'inferred' | 'explicit'; // How the default was determined
   description?: string;
   renderVariants?: boolean;
   displayTemplate?: string;
   hideInDocs?: boolean;
   example?: string;
+  excludedWith?: string[]; // Props that cannot be combined with this prop
 }
 
 export interface ComponentMetadata {
@@ -16,12 +18,17 @@ export interface ComponentMetadata {
   filePath: string;
   props: Record<string, PropMetadata>;
   styleFiles: string[];
+  subComponents?: string[]; // Names of sub-components (e.g., Select.Option for Select)
+  parentComponent?: string; // Name of parent component if this is a sub-component
+  compositionPattern?: string; // Description of how components compose together
 }
 
 export interface VariantExample {
   props: Record<string, any>;
   code: string;
   title: string;
+  isPermutation?: boolean; // True if this variant combines multiple variant props
+  combinedProps?: string[]; // Names of props that are combined in this permutation
 }
 
 export interface CSSVariable {

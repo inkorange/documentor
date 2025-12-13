@@ -1,0 +1,198 @@
+@use '../../styles/breakpoints.scss' as breakpoints;
+@use '../../styles/typography' as *;
+
+/**
+	Button Design Tokens Referenced:
+	
+	--Button-border-radius
+	--Button-height
+	--Button-width
+	--Button-max-width
+	--Button-font-size
+	--Button-font-weight
+
+	Primary -------------------
+	--Button-primary-background-color
+	--Button-primary-text-color
+	
+	Secondary -------------------
+	--Button-secondary-background-color
+	--Button-secondary-text-color
+
+	Tertiary -------------------
+	--Button-tertiary-background-color
+	--Button-tertiary-text-color
+
+	Text -------------------
+	--Button-text-background-color
+	--Button-text-text-color
+	--Button-text-text-hover-color
+	
+	Global Tokens Referenced:
+	--color-input-focus-shadow
+*/
+
+@mixin normalize-button {
+	box-sizing: border-box;
+	cursor: pointer;
+	text-decoration: none;
+	line-height: normal;
+	appearance: auto;
+	writing-mode: horizontal-tb;
+	outline: none;
+	text-align: center;
+	font-family: var(--font-default), sans-serif;
+	display: inline-block;
+
+	&:disabled {
+		cursor: not-allowed;
+	}
+}
+
+.btn {
+	--Button-border-radius-local: var(--Button-border-radius, 100vmax);
+	--Button-height-local: var(--Button-height, 44px);
+	--Button-width-local: var(--Button-width, 212px);
+	--Button-max-width-local: var(--Button-max-width, 288px);
+	--Button-font-size-local: var(--Button-font-size, calc(14rem / 16));
+	--Button-font-weight-local: var(--Button-font-weight, 600);
+
+	/* Primary ------------------- */
+	--Button-primary-background-color-local: var(--Button-primary-background-color, #1d1d1d);
+	--Button-primary-text-color-local: var(--Button-primary-text-color, #ffffff);
+
+	/* Secondary ------------------- */
+	--Button-secondary-background-color-local: var(--Button-secondary-background-color, #ffffff);
+	--Button-secondary-text-color-local: var(--Button-secondary-text-color, #1d1d1d);
+
+	/* Tertiary ------------------- */
+	--Button-tertiary-background-color-local: var(--Button-tertiary-background-color, #dc0019);
+	--Button-tertiary-text-color-local: var(--Button-tertiary-text-color, #ffffff);
+
+	/* Text ------------------- */
+	--Button-text-background-color-local: var(--Button-text-background-color, transparent);
+	--Button-text-text-color-local: var(--Button-text-text-color, #5f5f5f);
+	--Button-text-text-hover-color-local: var(--Button-text-text-hover-color, #5f5f5f);
+
+	font-size: var(--Button-font-size-local);
+	font-weight: var(--Button-font-weight-local);
+
+	--text-color: var(--Button-primary-text-color-local);
+	--background-color: currentcolor;
+	--border-color: var(--background-color);
+
+	height: var(--Button-height);
+	padding: 0 var(--spacing-xs);
+	border: 1px solid var(--border-color);
+	border-radius: var(--Button-border-radius, 100vmax);
+	color: var(--text-color);
+	background-color: var(--background-color);
+
+	@include normalize-button;
+
+	@media (hover: hover) {
+		&:hover:where(:not(:active), :active:disabled) {
+			opacity: 0.7125;
+		}
+	}
+
+	&:active:where(:not(:disabled)) {
+		opacity: 0.825;
+	}
+
+	&:focus-visible {
+		box-shadow: 0 0 4px 2px var(--color-input-focus-shadow, #14a1ff);
+	}
+
+	&__primary {
+		--text-color: var(--Button-primary-text-color-local);
+		--background-color: var(--Button-primary-background-color-local);
+	}
+
+	&__tertiary {
+		--background-color: var(--Button-tertiary-background-color-local);
+		--text-color: var(--Button-tertiary-text-color-local);
+		&[disabled] {
+			opacity: 0.4;
+		}
+	}
+
+	&.btn-facebook {
+		--background-color: #3a5997;
+	}
+
+	&__secondary {
+		--text-color: var(--Button-secondary-text-color-local);
+		--background-color: var(--Button-secondary-background-color-local);
+		--border-color: var(--Button-secondary-text-color-local);
+	}
+
+	&__hug {
+		--text-color: var(--color-black);
+		--background-color: var(--color-white);
+		font-weight: var(--font-bold);
+		line-height: calc(36 / 11);
+		font-size: calc(11rem / 16);
+		box-shadow: 0 0 var(--spacing-3xs) 0 rgb(29 29 29 / 40%);
+		padding: 0 var(--spacing-xs);
+		height: auto;
+		&.btn__square {
+			padding: 0 var(--spacing-2xs);
+		}
+	}
+
+	&__square {
+		--Button-border-radius: 4px;
+		padding: 0 var(--spacing-xs);
+	}
+
+	&__button-link {
+		min-height: var(--Button-height-local);
+		height: fit-content;
+		display: inline-flex;
+		align-items: center;
+		> span {
+			width: 100%;
+		}
+	}
+
+	&[data-status='resolved'] {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 5px;
+
+		svg {
+			min-width: var(--spacing-sm);
+			width: var(--spacing-sm);
+			path {
+				stroke-width: 1.75px;
+			}
+		}
+	}
+
+	&__text {
+		padding: 0;
+		border: none;
+		font-size: inherit;
+		color: var(--Button-text-text-color-local);
+		background-color: var(--Button-text-background-color-local);
+		font-weight: var(--font-semibold);
+		height: auto;
+
+		@include breakpoints.bp-desktop-down {
+			@include anchor-underline;
+		}
+
+		@media (hover: hover) {
+			&:hover {
+				color: var(--Button-text-text-hover-color-local);
+				@include anchor-underline;
+			}
+		}
+
+		&:active {
+			color: var(--Button-text-text-hover-color-local);
+		}
+	}
+}

@@ -134,6 +134,25 @@ const ComponentPage: React.FC = () => {
           </span>
           <CoverageBadge coverage={doc.coverage} />
         </div>
+
+        {doc.component.compositionPattern && (
+          <div className="composition-info">
+            <h3 className="composition-title">Component Composition</h3>
+            <p className="composition-pattern">{doc.component.compositionPattern}</p>
+            {doc.component.subComponents && doc.component.subComponents.length > 0 && (
+              <div className="sub-components">
+                <strong>Sub-components:</strong>
+                <ul>
+                  {doc.component.subComponents.map((subComp) => (
+                    <li key={subComp}>
+                      <code>{subComp}</code>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
       <section className="component-section">

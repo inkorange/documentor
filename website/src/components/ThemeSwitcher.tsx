@@ -25,9 +25,30 @@ const ThemeSwitcher: React.FC = () => {
   const applyThemeById = useCallback((themeId: string, themeList: Theme[]) => {
     const theme = themeList.find(t => t.id === themeId);
 
+    if (!theme) {
+      console.warn(`Theme not found: ${themeId}`);
+      return;
+    }
+
+    // Set theme background color as CSS variable (for .preview-content)
+    if (theme.background) {
+      document.documentElement.style.setProperty('--theme-background', theme.background);
+    } else {
+      document.documentElement.style.removeProperty('--theme-background');
+    }
+
+    // Save preference and set data attribute immediately
+    localStorage.setItem('documentor-theme', themeId);
+    document.documentElement.setAttribute('data-theme', themeId);
+
     // Fetch the theme CSS file
     fetch(`/themes/${themeId}.css`)
-      .then(res => res.text())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch theme: ${res.status}`);
+        }
+        return res.text();
+      })
       .then(cssText => {
         // Apply theme CSS variables to preview containers only
         applyScopedThemeStyles(cssText);
@@ -35,17 +56,6 @@ const ThemeSwitcher: React.FC = () => {
       .catch(error => {
         console.error('Failed to load theme CSS:', error);
       });
-
-    // Set theme background color as CSS variable (for .preview-content)
-    if (theme?.background) {
-      document.documentElement.style.setProperty('--theme-background', theme.background);
-    } else {
-      document.documentElement.style.removeProperty('--theme-background');
-    }
-
-    // Save preference
-    localStorage.setItem('documentor-theme', themeId);
-    document.documentElement.setAttribute('data-theme', themeId);
   }, []);
 
   useEffect(() => {
@@ -55,10 +65,14 @@ const ThemeSwitcher: React.FC = () => {
       .then((data: ThemeIndex) => {
         setThemes(data.themes);
 
-        // Check localStorage for saved preference
-        const savedTheme = localStorage.getItem('documentor-theme') || data.defaultTheme;
-        setCurrentTheme(savedTheme);
-        applyThemeById(savedTheme, data.themes);
+        // Check localStorage for saved preference and validate it exists
+        const savedTheme = localStorage.getItem('documentor-theme');
+        const themeToApply = savedTheme && data.themes.find(t => t.id === savedTheme)
+          ? savedTheme
+          : data.defaultTheme;
+
+        setCurrentTheme(themeToApply);
+        applyThemeById(themeToApply, data.themes);
         setLoading(false);
       })
       .catch(error => {
@@ -68,25 +82,27 @@ const ThemeSwitcher: React.FC = () => {
   }, [applyThemeById]);
 
   const applyScopedThemeStyles = (cssText: string) => {
-    // Remove existing scoped theme styles
-    const existingStyle = document.getElementById('scoped-theme-styles');
-    if (existingStyle) {
-      existingStyle.remove();
-    }
-
     // Extract CSS variables from :root { ... }
     const rootMatch = cssText.match(/:root\s*\{([\s\S]*?)\}/);
-    if (!rootMatch) return;
+    if (!rootMatch) {
+      console.warn('No :root selector found in theme CSS');
+      return;
+    }
 
     const cssVariables = rootMatch[1].trim();
 
     // Create new scoped styles that apply to both .preview-content and .live-preview-wrapper
     const scopedCSS = `.preview-content, .live-preview-wrapper { ${cssVariables} }`;
 
-    const styleElement = document.createElement('style');
-    styleElement.id = 'scoped-theme-styles';
+    // Update or create the style element
+    let styleElement = document.getElementById('scoped-theme-styles');
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = 'scoped-theme-styles';
+      document.head.appendChild(styleElement);
+    }
+
     styleElement.textContent = scopedCSS;
-    document.head.appendChild(styleElement);
   };
 
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

@@ -224,6 +224,133 @@ export interface CardProps {
 
 ---
 
+### `@variantExclude`
+
+**Purpose:** Prevent incompatible prop combinations in generated variant permutations
+
+**Type:** `string` (space or comma-separated list of prop names)
+
+**How it works:** When DocSpark generates variant permutations (combinations of multiple props), it uses this tag to avoid creating invalid or nonsensical combinations. This is particularly useful for props that shouldn't be used together.
+
+**Example:**
+```typescript
+export interface ButtonProps {
+  /**
+   * Visual style variant
+   * @renderVariants true
+   */
+  variant?: 'primary' | 'secondary' | 'tertiary';
+
+  /**
+   * Loading state indicator
+   * @renderVariants true
+   * @variantExclude disabled
+   */
+  loading?: boolean;
+
+  /**
+   * Disables the button
+   * @renderVariants true
+   * @variantExclude loading
+   */
+  disabled?: boolean;
+}
+```
+
+**Result:**
+- DocSpark will NOT generate variants that combine `loading` and `disabled` together
+- Each prop can still have individual variants
+- Prevents confusing documentation examples like "loading disabled button"
+
+**Use cases:**
+- Mutually exclusive states (`loading` / `disabled`)
+- Incompatible visual styles
+- Props that override each other
+- Combinations that don't make semantic sense
+
+**Multiple exclusions:**
+```typescript
+/**
+ * Icon-only button variant
+ * @renderVariants true
+ * @variantExclude loading disabled
+ */
+iconOnly?: boolean;
+```
+
+---
+
+### `@compositionPattern`
+
+**Purpose:** Document how compound components work together
+
+**Type:** `string` (description of the composition pattern)
+
+**How it works:** For components that follow the compound component pattern (like `Select.Option`, `Tabs.Tab`, etc.), this tag documents the relationship and usage pattern. DocSpark automatically detects sub-components and displays this information prominently.
+
+**Example:**
+```typescript
+/**
+ * Dropdown select component with composable options
+ *
+ * @compositionPattern Use Select as the parent with Select.Option children to create dropdown menus. Select.Group can be used to organize options into sections.
+ */
+const Select: React.FC<SelectProps> = ({ children, ...props }) => {
+  return <div className={styles.select}>{children}</div>;
+};
+
+// Sub-components
+Select.Option = SelectOption;
+Select.Group = SelectGroup;
+
+export default Select;
+```
+
+**Result:**
+- A "Component Composition" panel appears on the documentation page
+- Shows the pattern description
+- Lists all sub-components (`Select.Option`, `Select.Group`)
+- Helps users understand the component API
+
+**Auto-detection:**
+DocSpark automatically detects sub-components assigned as properties:
+```typescript
+Component.SubComponent = SubComponentImplementation;
+```
+
+If no `@compositionPattern` is provided but sub-components are detected, DocSpark generates a default description like:
+> "Compound component with 2 sub-components: Select.Option, Select.Group"
+
+**Advanced example:**
+```typescript
+/**
+ * Tab navigation component
+ *
+ * @compositionPattern Tabs serves as the container with Tabs.Tab for individual tabs and Tabs.Panel for content. The active tab is controlled via the `activeTab` prop on the parent Tabs component.
+ */
+const Tabs: React.FC<TabsProps> = ({ activeTab, children }) => {
+  return (
+    <div className={styles.tabs}>
+      {React.Children.map(children, (child) =>
+        React.cloneElement(child, { active: child.props.id === activeTab })
+      )}
+    </div>
+  );
+};
+
+Tabs.Tab = Tab;
+Tabs.Panel = TabPanel;
+```
+
+**Use cases:**
+- Navigation components (`Tabs.Tab`, `Menu.Item`)
+- Form components (`Form.Field`, `Form.Section`)
+- Layout components (`Card.Header`, `Card.Body`, `Card.Footer`)
+- List components (`List.Item`, `List.Header`)
+- Any component following the compound component pattern
+
+---
+
 ### Standard JSDoc Tags
 
 DocSpark also supports standard JSDoc tags that are commonly used:
@@ -960,8 +1087,10 @@ export default InputField;
 - `@displayTemplate {prop} Text` - Customize variant titles
 - `@hideInDocs` - Hide internal props
 - `@example "value"` - Provide example values
+- `@variantExclude propName` - Prevent prop combinations in permutations
+- `@compositionPattern description` - Document compound component patterns
 - `@deprecated` - Mark as deprecated
-- `@default value` - Document default value
+- `@default value` - Document default value (automatically inferred from code)
 
 **Component Structure:**
 1. Props interface named `{ComponentName}Props`

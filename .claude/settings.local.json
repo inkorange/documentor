@@ -35,7 +35,12 @@
       "Bash(pkill:*)",
       "Bash(timeout 10 node:*)",
       "Bash(git add:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npx docspark:*)",
+      "Bash(timeout 10 npx docspark:*)",
+      "Bash(done)",
+      "Bash(.husky/pre-commit:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

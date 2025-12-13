@@ -96,7 +96,7 @@
   border: 1px solid var(--border-color, #e5e7eb);
   border-radius: 0.75rem;
   padding: 1.5rem;
-  text-decoration: none;
+  text-decoration: none !important;
   color: inherit;
   transition: all 0.2s ease;
   display: flex;
@@ -106,10 +106,30 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
     border-color: var(--primary-color, #0066cc);
+    text-decoration: none !important;
 
     .card-title {
       color: var(--primary-color, #0066cc);
+      text-decoration: none !important;
     }
+
+    .card-description {
+      text-decoration: none !important;
+    }
+
+    .card-footer {
+      text-decoration: none !important;
+    }
+
+    .card-file-path {
+      text-decoration: none !important;
+    }
+  }
+
+  &:focus,
+  &:active,
+  &:visited {
+    text-decoration: none !important;
   }
 
   .card-title {
@@ -118,6 +138,7 @@
     margin: 0 0 0.5rem 0;
     color: var(--text-color, #1f2937);
     transition: color 0.2s ease;
+    text-decoration: none !important;
   }
 
   .card-description {
@@ -126,6 +147,7 @@
     margin: 0 0 1rem 0;
     line-height: 1.5;
     flex: 1;
+    text-decoration: none !important;
   }
 
   .card-footer {
@@ -134,6 +156,7 @@
     margin-bottom: 0.75rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--border-color, #e5e7eb);
+    text-decoration: none !important;
 
     .card-stat {
       font-size: 0.75rem;
@@ -141,6 +164,7 @@
       background-color: var(--bg-secondary, #f3f4f6);
       padding: 0.25rem 0.75rem;
       border-radius: 0.25rem;
+      text-decoration: none !important;
     }
   }
 
@@ -148,6 +172,7 @@
     font-size: 0.75rem;
     color: var(--text-tertiary, #9ca3af);
     font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    text-decoration: none !important;
   }
 }
 
