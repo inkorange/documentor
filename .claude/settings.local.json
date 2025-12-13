@@ -40,7 +40,8 @@
       "Bash(timeout 10 npx docspark:*)",
       "Bash(done)",
       "Bash(.husky/pre-commit:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(BUILD_PATH=../website/build react-scripts build:*)"
     ]
   }
 }
