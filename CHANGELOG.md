@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4
+
+### Patch Changes
+
+- e07b15c: Enhanced the build logic for different component variants
+
 ## 0.1.3
 
 ### Patch Changes
