@@ -255,6 +255,19 @@ export class VariantGenerator {
     // Use type to infer default
     const type = metadata.type.toLowerCase();
 
+    // Check for array types first (before checking for the base type)
+    if (type.includes('[]') || type.includes('array')) {
+      // Determine the array element type
+      if (type.includes('string')) {
+        return ['Option 1', 'Option 2', 'Option 3'];
+      }
+      if (type.includes('number')) {
+        return [1, 2, 3];
+      }
+      // Default array
+      return [];
+    }
+
     if (type.includes('string')) {
       return this.defaultValues.string;
     }
